@@ -4,9 +4,10 @@ import static spark.Spark.*;
 import spark.*;
 
 /**
- *
  * @author gonzo
- */
+ * 
+ * 
+**/
 public class Server
 {
     public static void main(String[] args)
@@ -29,6 +30,14 @@ public class Server
         {
             return "Hello World: " + request.body();
         });
+        
+        get("/hello",
+        (request, response) ->
+        {
+            response.type("application/json");
+            return new JsonTransformer();
+        }, 
+        new JsonTransformer());        
         
         get("/private", 
         (request, response) ->
