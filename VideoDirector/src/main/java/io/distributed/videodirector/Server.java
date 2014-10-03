@@ -1,7 +1,7 @@
 package io.distributed.videodirector;
 
+import com.google.gson.*;
 import static spark.Spark.*;
-import spark.*;
 
 /**
  * @author gonzo
@@ -31,11 +31,18 @@ public class Server
             return "Hello World: " + request.body();
         });
         
-        get("/hello",
+        post("/login",
         (request, response) ->
         {
+            // parse request
+            JsonElement req = new JsonParser().parse(request.body());
+            JsonObject  obj = req.getAsJsonObject();
+            
+            String user = obj.get("username").getAsString();
+            String pass = obj.get("password").getAsString();
+            
             response.type("application/json");
-            return new JsonTransformer();
+            return new Credentials(user, pass);
         }, 
         new JsonTransformer());        
         
