@@ -23,39 +23,38 @@
  */
 package io.distributed.videodirector;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
  *
  * @author gonzo
  */
-public class Server
+public class Event
 {
-    private ArrayList<Event> events;
+    private static long id_counter = 0;
     
-    public Server()
+    private long id;
+    private String name;
+    private List<Video> videos;
+    
+    public Event(String name)
     {
-        events = new ArrayList<Event>();
+        this.id = ++id_counter;
+        this.name = name;
     }
     
-    public Event eventById(long id)
+    public long getId()
     {
-        for (Event e : events)
-        {
-            if (e.getId() == id)
-                return e;
-        }
-        return null;
+        return this.id;
     }
-    public List<Event> getEvents()
+    public String getName()
     {
-        return events;
+        return this.name;
     }
     
-    public void addEvent(Event e)
+    public void addVideo(Video video)
     {
-        events.add(e);
+        this.videos.add(video);
     }
     
 }

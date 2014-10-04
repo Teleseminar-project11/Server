@@ -24,27 +24,22 @@
 package io.distributed.videodirector;
 
 /**
+ *
  * @author gonzo
- * 
-**/
-public class Credentials
+ */
+public class Video
 {
-    final private String user;
-    final private String pass;
+    private static long id_counter = 0;
     
-    public Credentials(String user, String pass)
-    {
-        this.user = user;
-        this.pass = pass;
-    }
+    private long id;
+    private long event_id;
+    private String name;
     
-    public String getUser()
+    public Video(long evid, String name)
     {
-        return this.user;
-    }
-    public String getPass()
-    {
-        return this.pass;
+        this.id = ++id_counter;
+        this.event_id = evid;
+        this.name = name;
     }
     
 }
