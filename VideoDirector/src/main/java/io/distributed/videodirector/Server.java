@@ -69,21 +69,23 @@ public class Server
         }, 
         new JsonTransformer());
         
-        put("/register",
+        post("/register",
         (Request request, Response response) ->
         {
             try
             {
-                File file = new File("output.pdf");
+                final File dir = new File("upload");
                 
-                new MultipartRequest(request.raw(), file.getAbsolutePath());
+                if (!dir.exists() && !dir.mkdirs())
+                {
+                    halt(500);
+                    return "Some Ting Wong";
+                }
+                
+                new MultipartRequest(request.raw(), dir.getAbsolutePath());
                 halt(200);
             }
-            catch (ServletException e)
-            {
-                e.printStackTrace();
-            }
-            catch (IOException e)
+            catch (ServletException | IOException e)
             {
                 e.printStackTrace();
             }
