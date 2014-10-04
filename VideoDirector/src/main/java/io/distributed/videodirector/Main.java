@@ -14,7 +14,7 @@ import static spark.Spark.*;
 **/
 public class Main
 {
-    static Server server = new Server();
+    static Director server = new Director();
     
     
     private static int copyInputStream(
@@ -36,20 +36,26 @@ public class Main
     
     public static void main(String[] args)
     {
+        server.addEvent(new Event("The International 2014"));
         setPort(1234);
         
-        post("/hello", 
+        /// GET /events
+        /// Lists all events (including videos) in JSON ///
+        get("/events",
         (request, response) ->
         {
-        	System.out.println("New POST received:");
-        	System.out.println(request.body());
-            return request.body();
-        });
+            response.type("application/json");
+            return server.getEvents();
+        }, 
+        new JsonTransformer());
         
+        /// POST /event/new
+        /// Create new event from JSON ///
+        /// Attributes: name, ...
         post("/event/new",
         (request, response) ->
         {
-            // parse request
+            // parse JSON data
             JsonElement req = new JsonParser().parse(request.body());
             JsonObject  obj = req.getAsJsonObject();
             
@@ -63,14 +69,8 @@ public class Main
         }, 
         new JsonTransformer());
         
-        get("/events",
-        (request, response) ->
-        {
-            response.type("application/json");
-            return server.getEvents();
-        }, 
-        new JsonTransformer());
-        
+        /// GET /event/id
+        /// Returns Event (including videos) as JSON ///
         get("/event/:id",
         (request, response) ->
         {
@@ -83,31 +83,62 @@ public class Main
         }, 
         new JsonTransformer());
         
-        put("/upload",
+        /// POST /event/event_id (JSON)
+        /// Upload JSON metadata about a video for Event @id ///
+        post("/event/:id",
         (Request request, Response response) ->
         {
-            File file = new File("output.pdf");
-            //file.createNewFile();
+            // parse request
+            String sid = request.params("id");
+            long id = Long.parseLong(sid);
             
-            try (FileOutputStream fw = new FileOutputStream(file.getAbsoluteFile()))
+            Event e = server.eventById(id);
+            if (e != null)
             {
-                InputStream content = request.raw().getInputStream();
+                // parse JSON data
+                // TODO: move me to Event
+                JsonElement req = new JsonParser().parse(request.body());
+                JsonObject  obj = req.getAsJsonObject();
                 
-                int len;
-                len = copyInputStream(content, fw);
+                String name = obj.get("name").getAsString();
+                Video v = new Video(name);
                 
-                return "Received " + len + " bytes from file: " + 
-                        request.params("file") + "\n";
+                e.addVideo(v);
+                return v;
             }
-            catch (IOException e)
-            {
-                e.printStackTrace();
-            }
-            return "Something went wrong";
-        });
-        get("/download",
+            
+            response.status(404);
+            return "No such event";
+        }, 
+        new JsonTransformer());
+        
+        /// GET /event/id/video_id
+        /// Retrieve video (@video) from Event @id
+        get("/event/:id/:video",
         (request, response) ->
         {
+            // parse request
+            String sid = request.params("id");
+            long id = Long.parseLong(sid);
+            
+            Event e = server.eventById(id);
+            if (e != null)
+            {
+                String svid = request.params("video");
+                long vid = Long.parseLong(svid);
+                
+                Video v = e.videoById(vid);
+                if (v != null)
+                {
+                    return v;
+                }
+                
+                response.status(404);
+                return "No such video for event " + e.getId();
+            }
+            response.status(404);
+            return "No such event";
+            /*
             try
             {
                 OutputStream output = response.raw().getOutputStream();
@@ -124,64 +155,7 @@ public class Main
             {
                 e.printStackTrace();
             }
-            return "Something went wrong";
-        });
-        
-        get("/private", 
-        (request, response) ->
-        {
-            response.status(401);
-            return "Go Away!!!";
-        });
-        
-        get("/users/:name", 
-        (request, response) ->
-        {
-            return "Selected user: " + request.params(":name");
-        });
-        
-        get("/news/:section", 
-        (request, response) ->
-        {
-            response.type("text/html");
-            return "<!doctype html><news>" + request.params("section") + "</news>";
-        });
-        
-        get("/protected", 
-        (request, response) ->
-        {
-            halt(403, "I don't think so!!!");
-            return null;
-        });
-        
-        post("/multipart",
-        (Request request, Response response) ->
-        {
-            try
-            {
-                final File dir = new File("upload");
-                
-                if (!dir.exists() && !dir.mkdirs())
-                {
-                    halt(500);
-                    return "Some Ting Wong";
-                }
-                
-                new MultipartRequest(request.raw(), dir.getAbsolutePath());
-                halt(200);
-            }
-            catch (ServletException | IOException e)
-            {
-                e.printStackTrace();
-            }
-            return "Something went wrong";
-        });
-        
-        get("/", 
-        (request, response) ->
-        {
-            response.redirect("/news/world");
-            return null;
+            return "Something went wrong";*/
         });
         
     }

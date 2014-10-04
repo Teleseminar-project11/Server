@@ -30,11 +30,11 @@ import java.util.List;
  *
  * @author gonzo
  */
-public class Server
+public class Director
 {
     private ArrayList<Event> events;
     
-    public Server()
+    public Director()
     {
         events = new ArrayList<Event>();
     }

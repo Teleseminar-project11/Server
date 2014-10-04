@@ -32,14 +32,17 @@ public class Video
     private static long id_counter = 0;
     
     private long id;
-    private long event_id;
     private String name;
     
-    public Video(long evid, String name)
+    public Video(String name)
     {
         this.id = ++id_counter;
-        this.event_id = evid;
         this.name = name;
+    }
+
+    public long getId()
+    {
+        return this.id;
     }
     
 }

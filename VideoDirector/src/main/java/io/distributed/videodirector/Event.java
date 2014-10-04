@@ -23,6 +23,7 @@
  */
 package io.distributed.videodirector;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -33,14 +34,15 @@ public class Event
 {
     private static long id_counter = 0;
     
-    private long id;
-    private String name;
-    private List<Video> videos;
+    final private long   id;
+    final private String name;
+    private ArrayList<Video> videos;
     
     public Event(String name)
     {
         this.id = ++id_counter;
         this.name = name;
+        this.videos = new ArrayList<>();
     }
     
     public long getId()
@@ -56,5 +58,14 @@ public class Event
     {
         this.videos.add(video);
     }
-    
+
+    Video videoById(long vid)
+    {
+        for (Video v : videos)
+        {
+            if (v.getId() == id)
+                return v;
+        }
+        return null;
+    }
 }
