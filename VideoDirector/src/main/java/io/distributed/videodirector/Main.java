@@ -30,6 +30,7 @@ public class Main
         {
             out.write(buffer, 0, len);
             total += len;
+            System.out.print(".");
         }
         return total;
     }
@@ -37,6 +38,7 @@ public class Main
     public static void main(String[] args)
     {
         server.addEvent(new Event("The International 2014"));
+//        setIpAddress("192.168.137.1");
         setPort(1234);
         
         /// GET /events
@@ -111,6 +113,49 @@ public class Main
             return "No such event";
         }, 
         new JsonTransformer());
+        
+        /// PUT /event/id/video_id
+        /// Upload video (@video) from Event @id
+        put("/event/:id/:video",
+		(Request request, Response response) ->
+		{
+			// TODO Folders for events
+			String filename = request.params("id") + "-" + request.params("video");
+		    File file = new File("upload/" + filename);
+		    
+		    if (file.exists()) {
+		    	return "File already exists";
+		    }
+		    //file.createNewFile();
+		    System.out.println("Downloading: " + filename);
+		    
+		    try (FileOutputStream fw = new FileOutputStream(file.getAbsoluteFile()))
+		    {
+		        InputStream content = request.raw().getInputStream();
+		        
+		        int len;
+		        len = copyInputStream(content, fw);
+		        
+		        System.out.println("Received " + len + " bytes from file: " + filename);
+		        return "Upload successful";
+		    }
+		    catch (IOException e)
+		    {
+		        e.printStackTrace();
+		    }
+		    return "Something went wrong";
+		});
+        
+        /// GET /selected
+        /// Retrieve list of selected but not yet uploaded videos
+        get("/selected", 
+        (request, response) ->
+        {
+            // TODO here a list of selected but not yet uploaded videos 
+        	// should be returned as a JSON string. 
+        	System.out.println("Selected accessed");
+            return "Ok";
+        });
         
         /// GET /event/id/video_id
         /// Retrieve video (@video) from Event @id
