@@ -2,6 +2,9 @@ package io.distributed.videodirector;
 
 import com.google.gson.*;
 import java.io.*;
+import javax.servlet.ServletException;
+import spark.Request;
+import spark.Response;
 import static spark.Spark.*;
 
 /**
@@ -66,24 +69,38 @@ public class Server
         }, 
         new JsonTransformer());
         
-        put("/upload",
-        (request, response) ->
+        put("/register",
+        (Request request, Response response) ->
         {
             try
             {
-                InputStream content = request.raw().getInputStream();
-                
                 File file = new File("output.pdf");
                 
-                // if file doesnt exists, then create it
-                //if (!file.exists())
-                //{
-                    file.createNewFile();
-                //}
+                new MultipartRequest(request.raw(), file.getAbsolutePath());
+                halt(200);
+            }
+            catch (ServletException e)
+            {
+                e.printStackTrace();
+            }
+            catch (IOException e)
+            {
+                e.printStackTrace();
+            }
+            return "Something went wrong";
+        });
+        put("/upload",
+        (Request request, Response response) ->
+        {
+            File file = new File("output.pdf");
+            //file.createNewFile();
+            
+            try (FileOutputStream fw = new FileOutputStream(file.getAbsoluteFile()))
+            {
+                InputStream content = request.raw().getInputStream();
                 
-                FileOutputStream fw = new FileOutputStream(file.getAbsoluteFile());
-                int len = copyInputStream(content, fw);
-                fw.close();
+                int len;
+                len = copyInputStream(content, fw);
                 
                 return "Received " + len + " bytes from file: " + 
                         request.params("file") + "\n";

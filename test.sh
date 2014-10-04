@@ -4,5 +4,6 @@ curl -H "Content-Type: application/json" -d '{"username":"test","password":"123"
 echo " (json)"
 echo ">> Uploading file"
 curl -i --request PUT --data-binary "@input.pdf" http://127.0.0.1:1234/upload
+# curl -v -include --form file=input.pdf --form upload=@input.pdf http://127.0.0.1:1234/upload
 echo ">> Downloading file"
 wget http://127.0.0.1:1234/download -O download.pdf
