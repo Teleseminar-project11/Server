@@ -64,7 +64,7 @@ public class Server
         }, 
         new JsonTransformer());
         
-        post("/upload",
+        put("/upload",
         (request, response) ->
         {
             try
@@ -83,7 +83,29 @@ public class Server
                 int len = copyInputStream(content, fw);
                 fw.close();
                 
-                return "Received: " + len + " bytes\n";
+                return "Received " + len + " bytes from file: " + 
+                        request.params("file") + "\n";
+            }
+            catch (IOException e)
+            {
+                e.printStackTrace();
+            }
+            return "Something went wrong";
+        });
+        get("/download",
+        (request, response) ->
+        {
+            try
+            {
+                OutputStream output = response.raw().getOutputStream();
+                
+                File file = new File("output.pdf");
+                
+                FileInputStream fi = new FileInputStream(file.getAbsoluteFile());
+                int len = copyInputStream(fi, output);
+                fi.close();
+                
+                return "Sent " + len + " bytes\n";
             }
             catch (IOException e)
             {
