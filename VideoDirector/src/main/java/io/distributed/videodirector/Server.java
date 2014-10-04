@@ -48,7 +48,7 @@ public class Server
         {
         	System.out.println("New POST received:");
         	System.out.println(request.body());
-            return "Hello World: " + request.body();
+            return request.body();
         });
         
         post("/login",
