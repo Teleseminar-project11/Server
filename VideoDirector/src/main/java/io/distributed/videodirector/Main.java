@@ -2,7 +2,6 @@ package io.distributed.videodirector;
 
 import com.google.gson.*;
 import java.io.*;
-import javax.servlet.ServletException;
 import spark.Request;
 import spark.Response;
 import static spark.Spark.*;
@@ -37,7 +36,7 @@ public class Main
     public static void main(String[] args)
     {
         server.addEvent(new Event("The International 2014"));
-        setPort(1234);
+        setPort(1235);
         
         /// GET /events
         /// Lists all events (including videos) in JSON ///
