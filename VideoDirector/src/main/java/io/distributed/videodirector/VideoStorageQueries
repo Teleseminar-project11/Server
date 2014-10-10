@@ -34,12 +34,12 @@ public class VideoStorageQueries {
 	}
 	
 	
-	private String createInsertQuery(JSONObject data) {
+	private String createInsertQuery(String tableName, JSONObject data) {
 		
 		int numItems = data.length();
 		
 		String[] keys = JSONObject.getNames(data);
-		String query = "INSERT INTO videoStorage (";
+		String query = "INSERT INTO " + tableName + " (";
 		JSONArray a = data.names();
 		try{
 			System.out.println(a.getString(2));
@@ -71,6 +71,41 @@ public class VideoStorageQueries {
 		query += ")";
 		
 		return query;
+	}
+	
+	
+	private void executeInsertQuery(String query) {
+		try {
+			
+		      connect = getConnection();
+		      // statements allow to issue SQL queries to the database
+		      statement = connect.createStatement();
+		      // resultSet gets the result of the SQL query
+		      statement.executeUpdate(query);
+		      
+			}catch(Exception e) {
+				System.out.println("Error occured in saveNewVideo: " + e);
+			}
+	}
+	
+	
+	
+	private ResultSet executeSelectQuery(String query) {
+		
+		ResultSet rs = null;
+		
+		try {
+		
+		// setup the connection with the DB.
+	      connect = getConnection();
+	      statement = connect.createStatement();
+	      rs = statement.executeQuery(query);
+				 
+		}catch(Exception e) {
+			
+		}
+		
+		return rs;
 	}
 	
 	
@@ -167,19 +202,78 @@ public class VideoStorageQueries {
 	
 	public void saveNewVideo(JSONObject data) {
 		
-		String query = createInsertQuery(data);
-		System.out.println(query);
+		String query = createInsertQuery("videoStorage", data);
+		//System.out.println(query);
+		executeInsertQuery(query);
+	}
+	
+	public void addClient(JSONObject data) {
+		String query = createInsertQuery("client", data);
+		//System.out.println(query);
+		executeInsertQuery(query);
 		
-		try {
+	}
+	
+	public void addEvent(JSONObject data) {
+		String query = createInsertQuery("event", data);
+		//System.out.println(query);
+		executeInsertQuery(query);
+	}
+	
+	public String getVideo(int video) {
 		
-	      connect = getConnection();
-	      // statements allow to issue SQL queries to the database
-	      statement = connect.createStatement();
-	      // resultSet gets the result of the SQL query
-	      statement.executeUpdate(query);
-	      
-		}catch(Exception e) {
-			System.out.println("Error occured in saveNewVideo: " + e);
-		}
+		String query = "select * from videoStorage where video_id = " + video;
+		
+		resultSet = executeSelectQuery(query);
+		
+		JSONObject json = getJsonFromResultSet(resultSet);
+		
+		return json.toString();
+	}
+	
+	
+	public String getMetaDataForVideo(int video) {
+		
+		String query = "select ... from videoStorage where video_id = " + video;
+		resultSet = executeSelectQuery(query);
+		
+		JSONObject json = getJsonFromResultSet(resultSet);
+		
+		return json.toString();
+	}
+	
+	public String getAllVideoNumForEvent(int event) {
+		
+		String query = "select video_id from videoStorage where event_id = " + event;
+		
+		resultSet = executeSelectQuery(query);
+		
+		JSONObject json = getJsonFromResultSet(resultSet);
+		
+		return json.toString();
+	}
+	
+	
+	public String getVideosFromEvent(int event) {
+		
+		String query = "select video_id from videoStorage where event_id = " + event;
+		
+		resultSet = executeSelectQuery(query);
+		
+		JSONObject json = getJsonFromResultSet(resultSet);
+		
+		return json.toString();
+	}
+	
+	
+	public String getEvent(int event) {
+		
+		String query = "select * from event where event_id = " + event;
+		
+		resultSet = executeSelectQuery(query);
+		
+		JSONObject json = getJsonFromResultSet(resultSet);
+		
+		return json.toString();
 	}
 }
