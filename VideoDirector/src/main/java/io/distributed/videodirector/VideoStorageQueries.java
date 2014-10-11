@@ -11,10 +11,8 @@ public class VideoStorageQueries
 {
     private Connection connect = null;
     private Statement statement = null;
-    private PreparedStatement preparedStatement = null;
     private ResultSet resultSet = null;
-
-
+    
     public static Connection getConnection() throws Exception
     {
         String driver = "org.gjt.mm.mysql.Driver";
@@ -32,14 +30,12 @@ public class VideoStorageQueries
         int numItems = data.entrySet().size();
         
         ArrayList<String> keys = new ArrayList<>();
-        for(Map.Entry<String, JsonElement> entry : data.entrySet())
+        data.entrySet().stream().forEach((entry) ->
         {
             keys.add(entry.getKey());
-        }
+        });
         
         String query = "INSERT INTO " + tableName + " (";
-        
-        System.out.println(keys.get(2));
 
         for(int i = 0; i < numItems; i++)
         {
@@ -66,6 +62,7 @@ public class VideoStorageQueries
             }
         }
         query += ")";
+        System.out.println("query: " + query);
         return query;
     }
     
@@ -117,8 +114,9 @@ public class VideoStorageQueries
             int numColumns = metaData.getColumnCount();
             String[] columnNames = new String[numColumns];
 
-            for(int i = 0; i < numColumns; i++) {
-                    columnNames[i] = metaData.getColumnName(i+1);
+            for(int i = 0; i < numColumns; i++)
+            {
+                columnNames[i] = metaData.getColumnName(i+1);
             }
 
             //turn answer from query into a string
@@ -165,7 +163,6 @@ public class VideoStorageQueries
         int numItems = 0;
         String answer = "{";
         JsonObject json = new JsonObject();
-
         try
         {
             // setup the connection with the DB.
