@@ -35,9 +35,8 @@ public class Main
     
     public static void main(String[] args)
     {
-        server.addEvent(new Event("The International 2014"));
         setPort(1235);
-//        setIpAddress("192.168.137.1");
+        //setIpAddress("192.168.137.1");
         
         /// GET /events
         /// Lists all events (including videos) in JSON ///
@@ -58,14 +57,10 @@ public class Main
             // parse JSON data
             JsonElement req = new JsonParser().parse(request.body());
             JsonObject  obj = req.getAsJsonObject();
-            
-            String name = obj.get("name").getAsString();
-            
-            Event event = new Event(name);
-            server.addEvent(event);
+            server.addEvent(obj);
             
             response.type("application/json");
-            return event;
+            return req.getAsString();
         }, 
         new JsonTransformer());
         
@@ -92,8 +87,8 @@ public class Main
             String sid = request.params("id");
             long id = Long.parseLong(sid);
             
-            Event e = server.eventById(id);
-            if (e != null)
+            String e = server.eventById(id);
+            if (e.length() != 0)
             {
                 // parse JSON data
                 // TODO: move me to Event
@@ -102,7 +97,7 @@ public class Main
                 
                 String name = obj.get("name").getAsString();
                 
-                server.addEventVideo(e, obj);
+                server.addEventVideo(id, obj);
                 return obj.getAsString();
             }
             
@@ -114,34 +109,34 @@ public class Main
         /// PUT /event/id/video_id
         /// Upload video (@video) from Event @id
         put("/event/:id/:video",
-		(Request request, Response response) ->
-		{
-			// TODO Folders for events
-			String filename = request.params("id") + "-" + request.params("video");
-		    File file = new File("upload/" + filename);
-		    
-		    if (file.exists()) {
-		    	return "File already exists";
-		    }
-		    //file.createNewFile();
-		    System.out.println("Downloading: " + filename);
-		    
-		    try (FileOutputStream fw = new FileOutputStream(file.getAbsoluteFile()))
-		    {
-		        InputStream content = request.raw().getInputStream();
-		        
-		        int len;
-		        len = copyInputStream(content, fw);
-		        
-		        System.out.println("Received " + len + " bytes from file: " + filename);
-		        return "Upload successful";
-		    }
-		    catch (IOException e)
-		    {
-		        e.printStackTrace();
-		    }
-		    return "Something went wrong";
-		});
+        (Request request, Response response) ->
+        {
+                // TODO Folders for events
+                String filename = request.params("id") + "-" + request.params("video");
+            File file = new File("upload/" + filename);
+
+            if (file.exists()) {
+                return "File already exists";
+            }
+            //file.createNewFile();
+            System.out.println("Downloading: " + filename);
+
+            try (FileOutputStream fw = new FileOutputStream(file.getAbsoluteFile()))
+            {
+                InputStream content = request.raw().getInputStream();
+
+                int len;
+                len = copyInputStream(content, fw);
+
+                System.out.println("Received " + len + " bytes from file: " + filename);
+                return "Upload successful";
+            }
+            catch (IOException e)
+            {
+                e.printStackTrace();
+            }
+            return "Something went wrong";
+        });
         
         /// GET /selected
         /// Retrieve list of selected but not yet uploaded videos
@@ -154,32 +149,23 @@ public class Main
             return "Ok";
         });
         
-        /// GET /event/id/video_id
+        /// GET /video/video_id
         /// Retrieve video (@video) from Event @id
-        get("/event/:id/:video",
+        get("/video/:video",
         (request, response) ->
         {
             // parse request
-            String sid = request.params("id");
-            long id = Long.parseLong(sid);
+            String svid = request.params("video");
+            int vid = Integer.parseInt(svid);
             
-            Event e = server.eventById(id);
-            if (e != null)
+            String v = server.videoById(vid);
+            if (v != null)
             {
-                String svid = request.params("video");
-                long vid = Long.parseLong(svid);
-                
-                Video v = e.videoById(vid);
-                if (v != null)
-                {
-                    return v;
-                }
-                
-                response.status(404);
-                return "No such video for event " + e.getId();
+                return v;
             }
+            
             response.status(404);
-            return "No such event";
+            return "No such video: " + svid;
             /*
             try
             {

@@ -91,19 +91,26 @@ public class VideoStorageQueries
         return query;
     }
     
-    private void executeInsertQuery(String query)
+    private long executeInsertQuery(String query)
     {
         try
         {
             Statement statement = connection.createStatement();
             // resultSet gets the result of the SQL query
             statement.executeUpdate(query);
+            
+            ResultSet rs = statement.getGeneratedKeys();
+            if (rs.next())
+            {
+                return rs.getInt(1);
+            }
+            throw new Exception("executeInsertQuery: Could not get insertion index");
         }
         catch(Exception e)
         {
-            System.out.println("Error occured in saveNewVideo: " + e);
             e.printStackTrace();
         }
+        return -1;
     }
     
     private ResultSet executeSelectQuery(String query)
@@ -249,20 +256,25 @@ public class VideoStorageQueries
         String query = "select video_id from videoStorage where event_id = " + event;
         return getSelectQueryAsJsonString(query);
     }
-
-    void addEventVideo(long event_id, JsonObject obj)
+    
+    public long addEventVideo(long event_id, long video_id)
     {
+        JsonObject json = new JsonObject();
+        json.addProperty("event_id", event_id);
+        json.addProperty("video_id", video_id);
         
+        String query = createInsertQuery("event_videos", json);
+        return executeInsertQuery(query);
     }
     
     /**
      *
      * @param data Video metadata as JSON object
      */
-    public void saveNewVideo(JsonObject data)
+    public long saveVideo(JsonObject data)
     {
         String query = createInsertQuery("video", data);
         System.out.println(query);
-        executeInsertQuery(query);
+        return executeInsertQuery(query);
     }
 }

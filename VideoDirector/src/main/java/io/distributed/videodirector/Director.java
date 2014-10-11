@@ -90,8 +90,13 @@ public class Director
     
     void addEventVideo(long event_id, JsonObject obj)
     {
-        database.addEventVideo(event_id, obj);
-        database.saveNewVideo(obj);
+        long video_id = database.saveVideo(obj);
+        database.addEventVideo(event_id, video_id);
+    }
+
+    String videoById(int video_id)
+    {
+        return database.getVideo(video_id);
     }
     
 }
