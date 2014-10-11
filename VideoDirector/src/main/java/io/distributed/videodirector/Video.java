@@ -29,20 +29,22 @@ package io.distributed.videodirector;
  */
 public class Video
 {
-    private static long id_counter = 0;
+    private final long id;
+    private final String name;
     
-    private long id;
-    private String name;
-    
-    public Video(String name)
+    public Video(long id, String name)
     {
-        this.id = ++id_counter;
+        this.id   = id;
         this.name = name;
     }
-
+    
     public long getId()
     {
         return this.id;
     }
     
+    public String getName()
+    {
+        return this.name;
+    }
 }

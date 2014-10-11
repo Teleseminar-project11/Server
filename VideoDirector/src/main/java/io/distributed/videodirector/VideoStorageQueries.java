@@ -1,17 +1,37 @@
+/*
+ * The MIT License
+ *
+ * Copyright 2014 gonzo.
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
 package io.distributed.videodirector;
 
 import com.google.gson.*;
 import java.sql.*;
 import java.util.ArrayList;
-import java.util.Map;
 
 //class for setting up and running SQL queries. Accessed through the class DatabaseController 
 //
 public class VideoStorageQueries
 {
-    private Connection connect = null;
-    private Statement statement = null;
-    private ResultSet resultSet = null;
+    final Connection connection;
     
     public static Connection getConnection() throws Exception
     {
@@ -23,6 +43,11 @@ public class VideoStorageQueries
         Class.forName(driver);
         Connection conn = DriverManager.getConnection(url, username, password);
         return conn;
+    }
+    
+    public VideoStorageQueries() throws Exception
+    {
+        connection = getConnection();
     }
     
     private String createInsertQuery(String tableName, JsonObject data)
@@ -58,7 +83,7 @@ public class VideoStorageQueries
             }
             catch(JsonParseException e)
             {
-                
+                e.printStackTrace();
             }
         }
         query += ")";
@@ -70,15 +95,14 @@ public class VideoStorageQueries
     {
         try
         {
-            connect = getConnection();
-            // statements allow to issue SQL queries to the database
-            statement = connect.createStatement();
+            Statement statement = connection.createStatement();
             // resultSet gets the result of the SQL query
             statement.executeUpdate(query);
         }
         catch(Exception e)
         {
             System.out.println("Error occured in saveNewVideo: " + e);
+            e.printStackTrace();
         }
     }
     
@@ -87,17 +111,16 @@ public class VideoStorageQueries
         ResultSet rs = null;
         try
         {
-            // setup the connection with the DB.
-            connect = getConnection();
-            statement = connect.createStatement();
+            Statement statement = connection.createStatement();
             rs = statement.executeQuery(query);
         }
         catch(Exception e)
         {
-            
+            e.printStackTrace();
         }
         return rs;
     }
+    
     private String getSelectQueryAsJsonString(String query)
     {
         ResultSet set = executeSelectQuery(query);
@@ -152,8 +175,11 @@ public class VideoStorageQueries
                 }
                 //add code to seperate tuples
             }
-        }catch(Exception e) {
-                System.out.println("Error occured in getJsonFromResultSet: " + e);
+        }
+        catch(Exception e)
+        {
+            System.out.println("Error occured in getJsonFromResultSet: " + e);
+            e.printStackTrace();
         }
         return json;
     }
@@ -166,9 +192,8 @@ public class VideoStorageQueries
         try
         {
             // setup the connection with the DB.
-            connect = getConnection();
-            statement = connect.createStatement();
-            resultSet = statement.executeQuery("SELECT count(entry_id) from VideoStorage");
+            Statement statement = connection.createStatement();
+            ResultSet resultSet = statement.executeQuery("SELECT count(entry_id) from VideoStorage");
 
             if (resultSet.next())
             {
@@ -176,7 +201,7 @@ public class VideoStorageQueries
             }
 
             // statements allow to issue SQL queries to the database
-            statement = connect.createStatement();
+            statement = connection.createStatement();
             // resultSet gets the result of the SQL query
             resultSet = statement.executeQuery("select * from VideoStorage");
 
@@ -185,33 +210,28 @@ public class VideoStorageQueries
         catch (Exception e)
         {
             System.out.println("Error occured in getAllData: " + e);
+            e.printStackTrace();
         }
         return json;
     }
     
-    //this method will get a json object
-    //it will use the data in the object to store a new tuple in the database
-    public void saveNewVideo(JsonObject data)
+    public String  getEvents()
     {
-        String query = createInsertQuery("videoStorage", data);
-        System.out.println(query);
-        executeInsertQuery(query);
+        String query = "select * from event";
+        return getSelectQueryAsJsonString(query);
     }
-
-    public void addClient(JsonObject data)
+    public String getEvent(long event)
     {
-        String query = createInsertQuery("client", data);
-        System.out.println(query);
-        executeInsertQuery(query);
+        String query = "select * from event where event_id = " + event;
+        return getSelectQueryAsJsonString(query);
     }
-
     public void addEvent(JsonObject data)
     {
         String query = createInsertQuery("event", data);
         System.out.println(query);
         executeInsertQuery(query);
     }
-
+    
     public String getVideo(int video)
     {
         String query = "select * from videoStorage where video_id = " + video;
@@ -229,10 +249,20 @@ public class VideoStorageQueries
         String query = "select video_id from videoStorage where event_id = " + event;
         return getSelectQueryAsJsonString(query);
     }
-    
-    public String getEvent(int event)
+
+    void addEventVideo(long event_id, JsonObject obj)
     {
-        String query = "select * from event where event_id = " + event;
-        return getSelectQueryAsJsonString(query);
+        
+    }
+    
+    /**
+     *
+     * @param data Video metadata as JSON object
+     */
+    public void saveNewVideo(JsonObject data)
+    {
+        String query = createInsertQuery("video", data);
+        System.out.println(query);
+        executeInsertQuery(query);
     }
 }

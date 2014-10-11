@@ -15,7 +15,6 @@ public class Main
 {
     static Director server = new Director();
     
-    
     private static int copyInputStream(
             InputStream  in, 
             OutputStream out)
@@ -102,10 +101,9 @@ public class Main
                 JsonObject  obj = req.getAsJsonObject();
                 
                 String name = obj.get("name").getAsString();
-                Video v = new Video(name);
                 
-                e.addVideo(v);
-                return v;
+                server.addEventVideo(e, obj);
+                return obj.getAsString();
             }
             
             response.status(404);

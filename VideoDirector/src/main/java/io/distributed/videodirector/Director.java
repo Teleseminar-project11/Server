@@ -23,8 +23,10 @@
  */
 package io.distributed.videodirector;
 
-import java.util.ArrayList;
-import java.util.List;
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -32,30 +34,64 @@ import java.util.List;
  */
 public class Director
 {
-    private ArrayList<Event> events;
+    static VideoStorageQueries database;
+    
+    // (1): database
+    // create database videodirector;
+    
+    // (2): user
+    // CREATE USER 'uname'@'localhost' IDENTIFIED BY 'passw';
+    // GRANT ALL PRIVILEGES ON videodirector.* TO 'uname'@'localhost';
+    
+    // (3): tables
+    // create table Event (id int not null auto_increment, name varchar(255) not null, primary key(id));
+    
     
     public Director()
     {
-        events = new ArrayList<Event>();
-    }
-    
-    public Event eventById(long id)
-    {
-        for (Event e : events)
+        try
         {
-            if (e.getId() == id)
-                return e;
+            database = new VideoStorageQueries();
         }
-        return null;
-    }
-    public List<Event> getEvents()
-    {
-        return events;
+        catch (Exception ex)
+        {
+            ex.printStackTrace();
+            Logger.getLogger(Director.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
     
-    public void addEvent(Event e)
+    public String eventById(long id)
     {
-        events.add(e);
+        return database.getEvent(id);
+    }
+    
+    public String getEvents()
+    {
+        return database.getEvents();
+    }
+    
+    /**
+     *
+     * @param obj Event to be created as JSON object
+     */
+    public void addEvent(JsonObject obj)
+    {
+        database.addEvent(obj);
+    }
+    
+    /**
+     *
+     * @return Returns an open database wrapper instance
+     */
+    protected static VideoStorageQueries getDatabase()
+    {
+        return database;
+    }
+    
+    void addEventVideo(long event_id, JsonObject obj)
+    {
+        database.addEventVideo(event_id, obj);
+        database.saveNewVideo(obj);
     }
     
 }
