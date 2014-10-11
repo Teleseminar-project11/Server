@@ -18,10 +18,10 @@ public class VideoStorageQueries
     public static Connection getConnection() throws Exception
     {
         String driver = "org.gjt.mm.mysql.Driver";
-        String url = "jdbc:mysql://localhost/?";
-        String username = "TODO";
-        String password = "TODO";
-
+        String url = "jdbc:mysql://localhost/videodirector";
+        String username = "uname";
+        String password = "passw";
+        
         Class.forName(driver);
         Connection conn = DriverManager.getConnection(url, username, password);
         return conn;
@@ -41,12 +41,13 @@ public class VideoStorageQueries
         
         System.out.println(keys.get(2));
 
-        for(int i = 0; i < numItems; i++) {
-                query += keys.get(i);
-                if(i != numItems - 1) {
-                        query += ", ";
-                }
-
+        for(int i = 0; i < numItems; i++)
+        {
+            query += keys.get(i);
+            if(i != numItems - 1)
+            {
+                query += ", ";
+            }
         }
         query += ") VALUES (";
 
@@ -67,8 +68,7 @@ public class VideoStorageQueries
         query += ")";
         return query;
     }
-
-
+    
     private void executeInsertQuery(String query)
     {
         try
@@ -160,11 +160,6 @@ public class VideoStorageQueries
         return json;
     }
     
-    private String getStringFromJson(JsonObject json)
-    {
-        return json.getAsString();
-    }
-    
     public JsonObject getAllData()
     {
         int numItems = 0;
@@ -194,33 +189,29 @@ public class VideoStorageQueries
         {
             System.out.println("Error occured in getAllData: " + e);
         }
-        
-        // turn json into string if we need to 
-        getStringFromJson(json);
         return json;
     }
     
     //this method will get a json object
     //it will use the data in the object to store a new tuple in the database
-    
     public void saveNewVideo(JsonObject data)
     {
         String query = createInsertQuery("videoStorage", data);
-        //System.out.println(query);
+        System.out.println(query);
         executeInsertQuery(query);
     }
 
     public void addClient(JsonObject data)
     {
         String query = createInsertQuery("client", data);
-        //System.out.println(query);
+        System.out.println(query);
         executeInsertQuery(query);
     }
 
     public void addEvent(JsonObject data)
     {
         String query = createInsertQuery("event", data);
-        //System.out.println(query);
+        System.out.println(query);
         executeInsertQuery(query);
     }
 
