@@ -7,12 +7,11 @@ import com.google.gson.JsonParser;
 public class DatabaseController
 {
     //class that directs the messages from the server to the model
-
     VideoStorageQueries v;
 
-    DatabaseController() {
-
-            v = new VideoStorageQueries();
+    DatabaseController()
+    {
+        v = new VideoStorageQueries();
     }
 
     /*
@@ -20,9 +19,9 @@ public class DatabaseController
      * 
      * 
      * PARAM: int request: This is a int value for identifying what you want to do on the server.
-     * 		  The values are as follows: 1 means you want to add a new video tuple
-     * 									 2 means you want to update a existing video tuple
-     * 									 9 means you want to get all items from the database
+     * The values are as follows: 1 means you want to add a new video tuple
+     * 	 2 means you want to update a existing video tuple
+     * 	 9 means you want to get all items from the database
      * PARAM: 
      * RETURN: This function returns a JSONObject or a string on json format.
      */
@@ -32,7 +31,7 @@ public class DatabaseController
         switch(request)
         {
         //1 == Insert video query. Here the string have to be a json type string.
-        case 1: JSONObject j = handleJsonStringToObject(msg);
+        case 1: JsonObject j = handleJsonStringToObject(msg);
                 v.saveNewVideo(j);
                 break;
         //return j;

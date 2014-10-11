@@ -1,14 +1,9 @@
 package io.distributed.videodirector;
 
-import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParseException;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
-import java.sql.Statement;
+import com.google.gson.*;
+import java.sql.*;
+import java.util.ArrayList;
+import java.util.Map;
 
 //class for setting up and running SQL queries. Accessed through the class DatabaseController 
 //
@@ -34,21 +29,20 @@ public class VideoStorageQueries
     
     private String createInsertQuery(String tableName, JsonObject data)
     {
-        int numItems = data.length();
-
-        String[] keys = JsonObject.getNames(data);
-        String query = "INSERT INTO " + tableName + " (";
-        JsonArray a = data.names();
-        try{
-                System.out.println(a.getString(2));
-        }catch(Exception e) {
-
+        int numItems = data.entrySet().size();
+        
+        ArrayList<String> keys = new ArrayList<>();
+        for(Map.Entry<String, JsonElement> entry : data.entrySet())
+        {
+            keys.add(entry.getKey());
         }
-
-        System.out.println(keys[2]);
+        
+        String query = "INSERT INTO " + tableName + " (";
+        
+        System.out.println(keys.get(2));
 
         for(int i = 0; i < numItems; i++) {
-                query += keys[i];
+                query += keys.get(i);
                 if(i != numItems - 1) {
                         query += ", ";
                 }
@@ -60,7 +54,7 @@ public class VideoStorageQueries
         {
             try
             {
-                query += data.get(keys[i]);
+                query += data.get(keys.get(i));
                 if (i != numItems - 1) {
                     query += ", ";
                 }
@@ -71,7 +65,6 @@ public class VideoStorageQueries
             }
         }
         query += ")";
-
         return query;
     }
 
