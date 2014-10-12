@@ -136,6 +136,8 @@ public class Main
         (Request request, Response response) ->
         {
             int video_id = Integer.parseInt(request.params("video_id"));
+            System.out.println("Receiving video: " + video_id);
+            System.out.println("-->");
             
             /**
              * Check if video exists for client, or if we 
@@ -144,95 +146,109 @@ public class Main
             int client_id = getSessionID(request);
             Client c = server.getClient(client_id);
             
-            if (c.hasVideo(video_id) == false)
+            Video video = c.getVideo(video_id);
+            if (video == null)
             {
+                response.status(404); // no such resource
                 return "Video " + video_id + " has not been registered yet";
             }
-            if (c.getVideo(video_id).isReceived())
+            if (video.isReceived())
             {
+                response.status(409); // resource conflict
                 return "Video " + video_id + " has already been received";
             }
             
             /**
              * Receive video from client
+             * 
             **/
-            String filename = request.params("id") + "-" + request.params("video");
-            File file = new File("upload/" + filename);
+            File file = new File("upload/video" + video_id);
+            System.out.println("Checking paths: " + file.getAbsolutePath());
             
             if (file.exists())
             {
-                return "File already exists";
+                response.status(403); // forbidden
+                return "File already exists\n";
             }
-            if (!file.mkdirs())
+            File parent = file.getParentFile();
+            if (!parent.exists() && !parent.mkdirs())            
             {
-                return "File path failure";
+                response.status(500); // internal error
+                return "File path failure: " + file.getAbsolutePath();
             }
             
             //file.createNewFile();
-            System.out.println("Downloading: " + filename);
-
+            System.out.println("Downloading to: " + file.getAbsoluteFile());
+            
             try (FileOutputStream fw = new FileOutputStream(file.getAbsoluteFile()))
             {
                 InputStream content = request.raw().getInputStream();
-
+                
                 int len;
                 len = copyInputStream(content, fw);
-
-                System.out.println("Received " + len + " bytes from file: " + filename);
+                
+                System.out.println("Received " + len + " bytes from file: " + file.getAbsoluteFile());
                 
                 /**
                  * Register that we received video from client
                 **/
-                Video video = c.getVideo(video_id);
-                
-                System.out.println("Received video " + video_id);
-                
+                System.out.println("Received video " + video_id + " obj: " + video);
                 video.received();
                 
-                return "Upload successful";
+                response.status(201); // resource created
+                return "Upload successful\n";
             }
             catch (IOException e)
             {
                 e.printStackTrace();
             }
-            return "Some Ting Wong (IOException)";
+            
+            response.status(500); // internal error
+            return "Some Ting Wong (IOException)\n";
         });
         
         /// GET /video/video_id
-        /// Retrieve video (@video) from Event @id
-        get("/video/:video",
-        (request, response) ->
+        /// Retrieve video (@video_id)
+        get("/video/:video_id",
+        (Request request, Response response) ->
         {
             // parse request
-            String svid = request.params("video");
-            int vid = Integer.parseInt(svid);
+            String svid = request.params("video_id");
+            int video_id = Integer.parseInt(svid);
             
-            String v = server.videoById(vid);
-            if (v != null)
+            String v = server.videoById(video_id);
+            if (v == null)
             {
-                return v;
+                response.status(404);
+                return "No such video: " + video_id + "\n";
             }
-            
-            response.status(404);
-            return "No such video: " + svid;
-            /*
+            /**
+             * Transfer video to client
+             * 
+            **/
             try
             {
                 OutputStream output = response.raw().getOutputStream();
                 
-                File file = new File("output.pdf");
+                File file = new File("upload/video" + video_id);
+                if (!file.exists())
+                {
+                    response.status(404);
+                    return "No such video" + video_id + "\n";
+                }
                 
                 FileInputStream fi = new FileInputStream(file.getAbsoluteFile());
                 int len = copyInputStream(fi, output);
                 fi.close();
                 
+                response.status(200);
                 return "Sent " + len + " bytes\n";
             }
             catch (IOException e)
             {
                 e.printStackTrace();
             }
-            return "Something went wrong";*/
+            return "Something went wrong\n";
         });
         
         /// GET /selected
@@ -246,6 +262,7 @@ public class Main
             
             if (c.hasVideos() == false)
             {
+                response.status(404); // no uploaded videos
                 return "You have no video candidates to upload";
             }
             

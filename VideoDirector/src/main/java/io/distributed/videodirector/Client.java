@@ -37,6 +37,7 @@ public class Client
     public Client(int id)
     {
         this.session_id = id;
+        this.videos = new ArrayList<>();
     }
     
     public int getSessionId()
@@ -44,11 +45,6 @@ public class Client
         return session_id;
     }
     
-    public boolean hasVideo(int vid)
-    {
-        return videos.stream().anyMatch((v)
-                -> (v.getId() == vid));
-    }
     public Video getVideo(int vid)
     {
         for (Video v : videos)
@@ -59,7 +55,7 @@ public class Client
     }
     public void addVideo(int vid)
     {
-        if (hasVideo(vid)) return;
+        if (getVideo(vid) != null) return;
         videos.add(new Video(vid));
     }
     
