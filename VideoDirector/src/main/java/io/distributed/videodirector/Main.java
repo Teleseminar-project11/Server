@@ -35,7 +35,7 @@ public class Main
     
     public static void main(String[] args)
     {
-        setPort(1235);
+        setPort(1234);
         //setIpAddress("192.168.137.1");
         
         /// GET /events
@@ -57,10 +57,13 @@ public class Main
             // parse JSON data
             JsonElement req = new JsonParser().parse(request.body());
             JsonObject  obj = req.getAsJsonObject();
+            
+            System.out.println(obj.toString());
+            
             server.addEvent(obj);
             
             response.type("application/json");
-            return req.getAsString();
+            return obj.toString();
         }, 
         new JsonTransformer());
         
@@ -95,10 +98,8 @@ public class Main
                 JsonElement req = new JsonParser().parse(request.body());
                 JsonObject  obj = req.getAsJsonObject();
                 
-                String name = obj.get("name").getAsString();
-                
                 server.addEventVideo(id, obj);
-                return obj.getAsString();
+                return obj.toString();
             }
             
             response.status(404);

@@ -26,6 +26,8 @@ package io.distributed.videodirector;
 import com.google.gson.*;
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 //class for setting up and running SQL queries. Accessed through the class DatabaseController 
 //
@@ -93,45 +95,75 @@ public class VideoStorageQueries
     
     private long executeInsertQuery(String query)
     {
+        Statement stm = null;
         try
         {
-            Statement statement = connection.createStatement();
+            stm = connection.createStatement();
             // resultSet gets the result of the SQL query
-            statement.executeUpdate(query);
+            stm.executeUpdate(query, Statement.RETURN_GENERATED_KEYS);
             
-            ResultSet rs = statement.getGeneratedKeys();
+            ResultSet rs = stm.getGeneratedKeys();
             if (rs.next())
             {
                 return rs.getInt(1);
             }
-            throw new Exception("executeInsertQuery: Could not get insertion index");
+            return -1;
         }
         catch(Exception e)
         {
             e.printStackTrace();
+        }
+        finally
+        {
+            try
+            {
+                if (stm != null) stm.close();
+            } catch (SQLException ex)
+            {
+                ex.printStackTrace();
+                Logger.getLogger(VideoStorageQueries.class.getName()).log(Level.SEVERE, null, ex);
+            }
         }
         return -1;
     }
     
-    private ResultSet executeSelectQuery(String query)
+    private ResultSet executeSelectQuery(Statement stm, String query)
+            throws SQLException
     {
-        ResultSet rs = null;
+        return stm.executeQuery(query);
+    }
+    
+    private String getSelectQueryAsJsonString(String query)
+    {
+        Statement stm = null;
+        String result = null;
         try
         {
-            Statement statement = connection.createStatement();
-            rs = statement.executeQuery(query);
+            stm = connection.createStatement();
+            ResultSet set = executeSelectQuery(stm, query);
+            
+            /*if (set == null)
+            {
+                return "{\"error\": \"" + table + " empty result set\"}";
+            }*/
+            result = getJsonFromResultSet(set).toString();
         }
         catch(Exception e)
         {
             e.printStackTrace();
         }
-        return rs;
-    }
-    
-    private String getSelectQueryAsJsonString(String query)
-    {
-        ResultSet set = executeSelectQuery(query);
-        return getJsonFromResultSet(set).getAsString();
+        finally
+        {
+            try
+            {
+                if (stm != null) stm.close();
+            }
+            catch (SQLException ex)
+            {
+                ex.printStackTrace();
+            }
+        }
+        return result;
     }
 
     private JsonObject getJsonFromResultSet(ResultSet resultSet)
@@ -143,93 +175,62 @@ public class VideoStorageQueries
             ResultSetMetaData metaData = resultSet.getMetaData();
             int numColumns = metaData.getColumnCount();
             String[] columnNames = new String[numColumns];
-
+            
             for(int i = 0; i < numColumns; i++)
-            {
                 columnNames[i] = metaData.getColumnName(i+1);
-            }
-
+            
             //turn answer from query into a string
-            while(resultSet.next())
+            while (resultSet.next())
             {
-                for(int columnIndex = 0; columnIndex < numColumns; columnIndex++)
+                JsonObject current = new JsonObject();
+                
+                for(int i = 0; i < numColumns; i++)
                 {
-                    if(columnIndex == numColumns)
-                    {
-                        columnIndex = 0;
-                    }
-                    
-                    String columnType = metaData.getColumnTypeName(columnIndex+1);
-                    System.out.println(columnNames[columnIndex] + " " + columnType);
-
+                    String columnType = metaData.getColumnTypeName(i+1);
+                    //System.out.println(columnNames[i] + " " + columnType);
                     // add the column value to json as new property
-                    if(columnType.equals("String"))
+                    switch (columnType)
                     {
-                        json.addProperty(columnNames[columnIndex], resultSet.getString(columnIndex+1));
-                    }
-                    else if(columnType.equals("INT"))
-                    {
-                        json.addProperty(columnNames[columnIndex], resultSet.getInt(columnIndex+1));
-                    }
-                    else if(columnType.equals("TIME"))
-                    {
-                        json.addProperty(columnNames[columnIndex], resultSet.getTime(columnIndex+1).toString());
-                    }
-                    else if(columnType.equals("DATE"))
-                    {
-                        json.addProperty(columnNames[columnIndex], resultSet.getDate(columnIndex+1).toString());
+                    case "VARCHAR":
+                        current.addProperty(
+                                columnNames[i], resultSet.getString(i+1));
+                        break;
+                    case "INT":
+                        current.addProperty(
+                                columnNames[i], resultSet.getInt(i+1));
+                        break;
+                    case "TIME":
+                        current.addProperty(
+                                columnNames[i], resultSet.getTime(i+1).toString());
+                        break;
+                    case "DATE":
+                        current.addProperty(
+                                columnNames[i], resultSet.getDate(i+1).toString());
+                        break;
+                    default:
+                        System.out.println("UNUSED COLUMN: " + columnNames[i] + " " + columnType);
                     }
                 }
-                //add code to seperate tuples
+                json.add(resultSet.getString(1), current);
             }
         }
-        catch(Exception e)
+        catch (Exception e)
         {
             System.out.println("Error occured in getJsonFromResultSet: " + e);
             e.printStackTrace();
         }
+        System.out.println(json.toString());
         return json;
     }
     
-    public JsonObject getAllData()
+    public String getEvents()
     {
-        int numItems = 0;
-        String answer = "{";
-        JsonObject json = new JsonObject();
-        try
-        {
-            // setup the connection with the DB.
-            Statement statement = connection.createStatement();
-            ResultSet resultSet = statement.executeQuery("SELECT count(entry_id) from VideoStorage");
-
-            if (resultSet.next())
-            {
-                numItems = resultSet.getInt(1);
-            }
-
-            // statements allow to issue SQL queries to the database
-            statement = connection.createStatement();
-            // resultSet gets the result of the SQL query
-            resultSet = statement.executeQuery("select * from VideoStorage");
-
-            json = getJsonFromResultSet(resultSet);
-        }
-        catch (Exception e)
-        {
-            System.out.println("Error occured in getAllData: " + e);
-            e.printStackTrace();
-        }
-        return json;
-    }
-    
-    public String  getEvents()
-    {
-        String query = "select * from event";
+        String query = "SELECT * FROM event";
         return getSelectQueryAsJsonString(query);
     }
     public String getEvent(long event)
     {
-        String query = "select * from event where event_id = " + event;
+        String query = "SELECT * FROM event_videos WHERE event_id=" + event;
         return getSelectQueryAsJsonString(query);
     }
     public void addEvent(JsonObject data)
@@ -239,32 +240,10 @@ public class VideoStorageQueries
         executeInsertQuery(query);
     }
     
-    public String getVideo(int video)
+    public String getVideo(int video_id)
     {
-        String query = "select * from videoStorage where video_id = " + video;
+        String query = "SELECT * FROM video WHERE id=" + video_id;
         return getSelectQueryAsJsonString(query);
-    }
-    
-    public String getVideoMetadata(int video)
-    {
-        String query = "select ... from videoStorage where video_id = " + video;
-        return getSelectQueryAsJsonString(query);
-    }
-
-    public String getEventVideos(int event)
-    {
-        String query = "select video_id from videoStorage where event_id = " + event;
-        return getSelectQueryAsJsonString(query);
-    }
-    
-    public long addEventVideo(long event_id, long video_id)
-    {
-        JsonObject json = new JsonObject();
-        json.addProperty("event_id", event_id);
-        json.addProperty("video_id", video_id);
-        
-        String query = createInsertQuery("event_videos", json);
-        return executeInsertQuery(query);
     }
     
     /**
@@ -277,4 +256,15 @@ public class VideoStorageQueries
         System.out.println(query);
         return executeInsertQuery(query);
     }
+    
+    public long addEventVideo(long event_id, long video_id)
+    {
+        JsonObject json = new JsonObject();
+        json.addProperty("event_id", event_id);
+        json.addProperty("video_id", video_id);
+        
+        String query = createInsertQuery("event_videos", json);
+        return executeInsertQuery(query);
+    }
+    
 }

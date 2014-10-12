@@ -11,11 +11,13 @@ echo "== Registering event"
 echo "== "
 curl -H "Content-Type: application/json" -d '{"name":"test event"}' http://localhost:1234/event/new
 echo ""
+
 echo "== "
 echo "== Retrieving all events"
 echo "== "
 curl -i --request GET http://127.0.0.1:1234/events
 echo ""
+
 # get default event
 echo "== "
 echo "== Retrieving event"
@@ -44,7 +46,9 @@ curl -i --request GET http://127.0.0.1:1234/event/1
 echo ""
 
 echo "== "
-echo "== Retrieving all events (with videos)"
+echo "== Retrieving all events"
 echo "== "
 curl -i --request GET http://127.0.0.1:1234/events
 echo ""
+
+exit 0

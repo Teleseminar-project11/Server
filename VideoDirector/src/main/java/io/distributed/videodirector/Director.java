@@ -23,7 +23,6 @@
  */
 package io.distributed.videodirector;
 
-import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -44,8 +43,9 @@ public class Director
     // GRANT ALL PRIVILEGES ON videodirector.* TO 'uname'@'localhost';
     
     // (3): tables
-    // create table Event (id int not null auto_increment, name varchar(255) not null, primary key(id));
-    
+    // create table event (id int not null auto_increment, name varchar(255) not null, primary key(id));
+    // create table video (id int not null auto_increment, name varchar(255) not null, primary key(id));
+    // create table event_videos (event_id int not null, video_id int not null, primary key(event_id, video_id));
     
     public Director()
     {
