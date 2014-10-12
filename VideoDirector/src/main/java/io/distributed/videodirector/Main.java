@@ -2,6 +2,7 @@ package io.distributed.videodirector;
 
 import com.google.gson.*;
 import java.io.*;
+import java.util.ArrayList;
 import spark.Request;
 import spark.Response;
 import static spark.Spark.*;
@@ -127,9 +128,11 @@ public class Main
         }, 
         new JsonTransformer());
         
-        /// PUT /event/id/video_id
-        /// Upload video (@video) from Event @id
-        put("/event/:id/:video",
+        /**
+         * PUT /video/video_id
+         * Upload @video_id candidate
+        **/
+        put("/video/:video_id",
         (Request request, Response response) ->
         {
             int video_id = Integer.parseInt(request.params("video_id"));
@@ -155,11 +158,16 @@ public class Main
             **/
             String filename = request.params("id") + "-" + request.params("video");
             File file = new File("upload/" + filename);
-
+            
             if (file.exists())
             {
                 return "File already exists";
             }
+            if (!file.mkdirs())
+            {
+                return "File path failure";
+            }
+            
             //file.createNewFile();
             System.out.println("Downloading: " + filename);
 
@@ -175,7 +183,11 @@ public class Main
                 /**
                  * Register that we received video from client
                 **/
-                c.getVideo(video_id).received();
+                Video video = c.getVideo(video_id);
+                
+                System.out.println("Received video " + video_id);
+                
+                video.received();
                 
                 return "Upload successful";
             }
@@ -184,18 +196,6 @@ public class Main
                 e.printStackTrace();
             }
             return "Some Ting Wong (IOException)";
-        });
-        
-        /// GET /selected
-        /// Retrieve list of selected but not yet uploaded videos
-        get("/selected", 
-        (request, response) ->
-        {
-            int client_id = getSessionID(request);
-            // TODO here a list of selected but not yet uploaded videos 
-        	// should be returned as a JSON string. 
-        	System.out.println("Selected accessed");
-            return "Ok";
         });
         
         /// GET /video/video_id
@@ -233,6 +233,27 @@ public class Main
                 e.printStackTrace();
             }
             return "Something went wrong";*/
+        });
+        
+        /// GET /selected
+        /// Retrieve list of selected (video) candidates
+        get("/selected", 
+        (Request request, Response response) ->
+        {
+            int client_id = getSessionID(request);
+            // TODO here a list of selected but not yet uploaded videos
+            Client c = server.getClient(client_id);
+            
+            if (c.hasVideos() == false)
+            {
+                return "You have no video candidates to upload";
+            }
+            
+            ArrayList<Video> candidates = 
+                    server.calculateCandidates(c.getVideos());
+            
+        	// should be returned as a JSON string. 
+            return new Gson().toJson(candidates);
         });
         
     }

@@ -115,5 +115,9 @@ public class Director
     {
         return database.getVideo(video_id);
     }
-    
+
+    ArrayList<Video> calculateCandidates(ArrayList<Video> videos)
+    {
+        return null;
+    }
 }

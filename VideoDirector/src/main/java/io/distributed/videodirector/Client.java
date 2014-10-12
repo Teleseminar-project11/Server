@@ -62,6 +62,11 @@ public class Client
         if (hasVideo(vid)) return;
         videos.add(new Video(vid));
     }
+    
+    public boolean hasVideos()
+    {
+        return !videos.isEmpty();
+    }
     public ArrayList<Video> getVideos()
     {
         return videos;
