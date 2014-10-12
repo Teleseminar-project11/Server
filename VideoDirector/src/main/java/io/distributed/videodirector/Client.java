@@ -23,32 +23,47 @@
  */
 package io.distributed.videodirector;
 
+import java.util.ArrayList;
+
 /**
  *
  * @author gonzo
  */
-public class Video
+public class Client
 {
-    private final long id;
-    private boolean    received;
+    private ArrayList<Video> videos;
+    private final int session_id;
     
-    public Video(long id)
+    public Client(int id)
     {
-        this.id       = id;
-        this.received = false;
+        this.session_id = id;
     }
     
-    public long getId()
+    public int getSessionId()
     {
-        return this.id;
+        return session_id;
     }
     
-    public boolean isReceived()
+    public boolean hasVideo(int vid)
     {
-        return received;
+        return videos.stream().anyMatch((v)
+                -> (v.getId() == vid));
     }
-    public void received()
+    public Video getVideo(int vid)
     {
-        this.received = true;
+        for (Video v : videos)
+        {
+            if (v.getId() == vid) return v;
+        }
+        return null;
+    }
+    public void addVideo(int vid)
+    {
+        if (hasVideo(vid)) return;
+        videos.add(new Video(vid));
+    }
+    public ArrayList<Video> getVideos()
+    {
+        return videos;
     }
 }

@@ -14,10 +14,10 @@ import static spark.Spark.*;
 public class Main
 {
     static Director server = new Director();
+    static int id_counter  = 0;
     
-    private static int copyInputStream(
-            InputStream  in, 
-            OutputStream out)
+    private static int copyInputStream(InputStream  in, 
+                                       OutputStream out)
     throws IOException
     {
         byte[] buffer = new byte[1024];
@@ -31,6 +31,17 @@ public class Main
             System.out.print(".");
         }
         return total;
+    }
+    
+    private static int getSessionID(Request req)
+    {
+        Integer id = req.session().attribute("id");
+        if (id == null)
+        {
+            req.session().attribute("id", ++id_counter);
+            return id_counter;
+        }
+        return id;
     }
     
     public static void main(String[] args)
@@ -87,8 +98,7 @@ public class Main
         (Request request, Response response) ->
         {
             // parse request
-            String sid = request.params("id");
-            long id = Long.parseLong(sid);
+            long id = Long.parseLong(request.params("id"));
             
             String e = server.eventById(id);
             if (e.length() != 0)
@@ -98,7 +108,17 @@ public class Main
                 JsonElement req = new JsonParser().parse(request.body());
                 JsonObject  obj = req.getAsJsonObject();
                 
-                server.addEventVideo(id, obj);
+                // add video to database (and get id)
+                int video_id = server.addEventVideo(id, obj);
+                
+                // get client from session
+                int client_id = getSessionID(request);
+                Client c = server.getClient(client_id);
+                
+                // add video to clients list of candidates for upload
+                c.addVideo(video_id);
+                
+                // respond with request for successful call
                 return obj.toString();
             }
             
@@ -112,11 +132,32 @@ public class Main
         put("/event/:id/:video",
         (Request request, Response response) ->
         {
-                // TODO Folders for events
-                String filename = request.params("id") + "-" + request.params("video");
+            int video_id = Integer.parseInt(request.params("video_id"));
+            
+            /**
+             * Check if video exists for client, or if we 
+             * have already received this video
+            **/
+            int client_id = getSessionID(request);
+            Client c = server.getClient(client_id);
+            
+            if (c.hasVideo(video_id) == false)
+            {
+                return "Video " + video_id + " has not been registered yet";
+            }
+            if (c.getVideo(video_id).isReceived())
+            {
+                return "Video " + video_id + " has already been received";
+            }
+            
+            /**
+             * Receive video from client
+            **/
+            String filename = request.params("id") + "-" + request.params("video");
             File file = new File("upload/" + filename);
 
-            if (file.exists()) {
+            if (file.exists())
+            {
                 return "File already exists";
             }
             //file.createNewFile();
@@ -130,13 +171,19 @@ public class Main
                 len = copyInputStream(content, fw);
 
                 System.out.println("Received " + len + " bytes from file: " + filename);
+                
+                /**
+                 * Register that we received video from client
+                **/
+                c.getVideo(video_id).received();
+                
                 return "Upload successful";
             }
             catch (IOException e)
             {
                 e.printStackTrace();
             }
-            return "Something went wrong";
+            return "Some Ting Wong (IOException)";
         });
         
         /// GET /selected
@@ -144,6 +191,7 @@ public class Main
         get("/selected", 
         (request, response) ->
         {
+            int client_id = getSessionID(request);
             // TODO here a list of selected but not yet uploaded videos 
         	// should be returned as a JSON string. 
         	System.out.println("Selected accessed");

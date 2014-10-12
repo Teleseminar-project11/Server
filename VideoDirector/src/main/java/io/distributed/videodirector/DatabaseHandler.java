@@ -31,7 +31,7 @@ import java.util.logging.Logger;
 
 //class for setting up and running SQL queries. Accessed through the class DatabaseController 
 //
-public class VideoStorageQueries
+public class DatabaseHandler
 {
     final Connection connection;
     
@@ -47,7 +47,7 @@ public class VideoStorageQueries
         return conn;
     }
     
-    public VideoStorageQueries() throws Exception
+    public DatabaseHandler() throws Exception
     {
         connection = getConnection();
     }
@@ -93,7 +93,7 @@ public class VideoStorageQueries
         return query;
     }
     
-    private long executeInsertQuery(String query)
+    private int executeInsertQuery(String query)
     {
         Statement stm = null;
         try
@@ -121,7 +121,7 @@ public class VideoStorageQueries
             } catch (SQLException ex)
             {
                 ex.printStackTrace();
-                Logger.getLogger(VideoStorageQueries.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(DatabaseHandler.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
         return -1;
@@ -250,7 +250,7 @@ public class VideoStorageQueries
      *
      * @param data Video metadata as JSON object
      */
-    public long saveVideo(JsonObject data)
+    public int saveVideo(JsonObject data)
     {
         String query = createInsertQuery("video", data);
         System.out.println(query);

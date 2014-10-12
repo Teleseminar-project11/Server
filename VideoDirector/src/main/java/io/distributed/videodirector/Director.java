@@ -24,6 +24,7 @@
 package io.distributed.videodirector;
 
 import com.google.gson.JsonObject;
+import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -33,7 +34,9 @@ import java.util.logging.Logger;
  */
 public class Director
 {
-    static VideoStorageQueries database;
+    static DatabaseHandler database;
+    
+    private ArrayList<Client> clients;
     
     // (1): database
     // create database videodirector;
@@ -51,13 +54,25 @@ public class Director
     {
         try
         {
-            database = new VideoStorageQueries();
+            database = new DatabaseHandler();
         }
         catch (Exception ex)
         {
             ex.printStackTrace();
             Logger.getLogger(Director.class.getName()).log(Level.SEVERE, null, ex);
         }
+        clients = new ArrayList<>();
+    }
+    
+    public Client getClient(int id)
+    {
+        for (Client c : clients)
+        {
+            if (c.getSessionId() == id) return c;
+        }
+        Client c = new Client(id);
+        clients.add(c);
+        return c;
     }
     
     public String eventById(long id)
@@ -83,15 +98,17 @@ public class Director
      *
      * @return Returns an open database wrapper instance
      */
-    protected static VideoStorageQueries getDatabase()
+    protected static DatabaseHandler getDatabase()
     {
         return database;
     }
     
-    void addEventVideo(long event_id, JsonObject obj)
+    int addEventVideo(long event_id, JsonObject obj)
     {
-        long video_id = database.saveVideo(obj);
+        int video_id = database.saveVideo(obj);
         database.addEventVideo(event_id, video_id);
+        
+        return video_id;
     }
 
     String videoById(int video_id)
