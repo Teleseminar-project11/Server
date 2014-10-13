@@ -64,6 +64,15 @@ public class Director
         clients = new ArrayList<>();
     }
     
+    /**
+     *
+     * @return Returns an open database wrapper instance
+     */
+    protected static DatabaseHandler getDatabase()
+    {
+        return database;
+    }
+    
     public Client getClient(int id)
     {
         for (Client c : clients)
@@ -75,12 +84,16 @@ public class Director
         return c;
     }
     
-    public String eventById(long id)
+    public JsonObject eventById(int id)
     {
         return database.getEvent(id);
     }
+    public JsonObject getEventAndVideos(int id)
+    {
+        return database.getEventVideos(id);
+    }
     
-    public String getEvents()
+    public JsonObject getEvents()
     {
         return database.getEvents();
     }
@@ -89,21 +102,12 @@ public class Director
      *
      * @param obj Event to be created as JSON object
      */
-    public void addEvent(JsonObject obj)
+    public int addEvent(JsonObject obj)
     {
-        database.addEvent(obj);
+        return database.addEvent(obj);
     }
     
-    /**
-     *
-     * @return Returns an open database wrapper instance
-     */
-    protected static DatabaseHandler getDatabase()
-    {
-        return database;
-    }
-    
-    int addEventVideo(long event_id, JsonObject obj)
+    public int addEventVideo(long event_id, JsonObject obj)
     {
         int video_id = database.saveVideo(obj);
         database.addEventVideo(event_id, video_id);
@@ -111,12 +115,12 @@ public class Director
         return video_id;
     }
 
-    String videoById(int video_id)
+    public JsonObject videoById(int video_id)
     {
         return database.getVideo(video_id);
     }
 
-    ArrayList<Video> calculateCandidates(ArrayList<Video> videos)
+    public ArrayList<Video> calculateCandidates(ArrayList<Video> videos)
     {
         return null;
     }

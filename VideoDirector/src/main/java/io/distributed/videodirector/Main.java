@@ -53,78 +53,91 @@ public class Main
         /// GET /events
         /// Lists all events (including videos) in JSON ///
         get("/events",
-        (request, response) ->
+        (Request request, Response response) ->
         {
+            response.status(200);
             response.type("application/json");
-            return server.getEvents();
-        }, 
-        new JsonTransformer());
+            return server.getEvents().toString();
+        });
         
         /// POST /event/new
         /// Create new event from JSON ///
         /// Attributes: name, ...
         post("/event/new",
-        (request, response) ->
+        (Request request, Response response) ->
         {
             // parse JSON data
             JsonElement req = new JsonParser().parse(request.body());
             JsonObject  obj = req.getAsJsonObject();
             
-            System.out.println(obj.toString());
+            System.out.println("Creating event: " + obj.toString());
+            int id = server.addEvent(obj);
+            System.out.println("New event has id: " + id);
             
-            server.addEvent(obj);
-            
+            // add id to response
+            obj.addProperty("id", id);
+            // respond with json string
             response.type("application/json");
             return obj.toString();
-        }, 
-        new JsonTransformer());
+        });
         
-        /// GET /event/id
-        /// Returns Event (including videos) as JSON ///
-        get("/event/:id",
+        /// GET /event/event_id
+        /// Returns event videos for @event_id as JSON ///
+        get("/event/:event_id",
         (request, response) ->
         {
             // parse request
-            String sid = request.params("id");
-            long id = Long.parseLong(sid);
+            String sid = request.params("event_id");
+            int id = Integer.parseInt(sid);
             
+            System.out.println("Retrieving event: " + id);
+            JsonObject event = server.eventById(id);
+            System.out.println("Response: " + event.toString());
+            if (event.toString().length() < 3)
+            {
+                response.status(404);
+                return "No such event";
+            }
+            
+            response.status(200);
             response.type("application/json");
-            return server.eventById(id);
-        }, 
-        new JsonTransformer());
+            return server.getEventAndVideos(id).toString();
+        });
         
         /// POST /event/event_id (JSON)
         /// Upload JSON metadata about a video for Event @id ///
-        post("/event/:id",
+        post("/event/:event_id",
         (Request request, Response response) ->
         {
             // parse request
-            long id = Long.parseLong(request.params("id"));
+            int id = Integer.parseInt(request.params("event_id"));
             
-            String e = server.eventById(id);
-            if (e.length() != 0)
+            JsonObject event = server.eventById(id);
+            System.out.println("eventById: " + event.toString());
+            if (event.toString().length() < 3)
             {
-                // parse JSON data
-                // TODO: move me to Event
-                JsonElement req = new JsonParser().parse(request.body());
-                JsonObject  obj = req.getAsJsonObject();
-                
-                // add video to database (and get id)
-                int video_id = server.addEventVideo(id, obj);
-                
-                // get client from session
-                int client_id = getSessionID(request);
-                Client c = server.getClient(client_id);
-                
-                // add video to clients list of candidates for upload
-                c.addVideo(video_id);
-                
-                // respond with request for successful call
-                return obj.toString();
+                response.status(404);
+                return "No such event";
             }
             
-            response.status(404);
-            return "No such event";
+            // parse JSON data
+            // TODO: move me to Event
+            JsonElement req = new JsonParser().parse(request.body());
+            JsonObject  obj = req.getAsJsonObject();
+            
+            // add video to database (and get id)
+            int video_id = server.addEventVideo(id, obj);
+            
+            // get client from session
+            int client_id = getSessionID(request);
+            Client c = server.getClient(client_id);
+            
+            // add video to clients list of candidates for upload
+            c.addVideo(video_id);
+            
+            // respond with request for successful call
+            response.type("application/json");
+            return obj.toString();
         }, 
         new JsonTransformer());
         
@@ -216,8 +229,8 @@ public class Main
             String svid = request.params("video_id");
             int video_id = Integer.parseInt(svid);
             
-            String v = server.videoById(video_id);
-            if (v == null)
+            JsonObject video = server.videoById(video_id);
+            if (video.has("id") == false)
             {
                 response.status(404);
                 return "No such video: " + video_id + "\n";
@@ -270,6 +283,7 @@ public class Main
                     server.calculateCandidates(c.getVideos());
             
         	// should be returned as a JSON string. 
+            response.type("application/json");
             return new Gson().toJson(candidates);
         });
         

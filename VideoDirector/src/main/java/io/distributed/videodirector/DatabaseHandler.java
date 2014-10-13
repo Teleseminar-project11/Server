@@ -133,10 +133,10 @@ public class DatabaseHandler
         return stm.executeQuery(query);
     }
     
-    private String getSelectQueryAsJsonString(String query)
+    private JsonObject getSelectQueryAsJson(String query)
     {
         Statement stm = null;
-        String result = null;
+        JsonObject result = null;
         try
         {
             stm = connection.createStatement();
@@ -146,7 +146,7 @@ public class DatabaseHandler
             {
                 return "{\"error\": \"" + table + " empty result set\"}";
             }*/
-            result = getJsonFromResultSet(set).toString();
+            result = getJsonFromResultSet(set);
         }
         catch(Exception e)
         {
@@ -223,27 +223,38 @@ public class DatabaseHandler
         return json;
     }
     
-    public String getEvents()
+    public JsonObject getEvents()
     {
         String query = "SELECT * FROM event";
-        return getSelectQueryAsJsonString(query);
+        return getSelectQueryAsJson(query);
     }
-    public String getEvent(long event)
+    public JsonObject getEvent(int event)
     {
-        String query = "SELECT * FROM event_videos WHERE event_id=" + event;
-        return getSelectQueryAsJsonString(query);
+        String query = "SELECT * FROM event WHERE id=" + event;
+        return getSelectQueryAsJson(query);
     }
-    public void addEvent(JsonObject data)
+    public JsonObject getEventVideos(int event)
+    {
+        // get event
+        JsonObject obj = getEvent(event);
+        // get videos for event
+        String query = "SELECT video_id FROM event_videos WHERE event_id=" + event;
+        JsonObject child = getSelectQueryAsJson(query);
+        // add videos to event
+        obj.add("videos", child);
+        return obj;
+    }
+    public int addEvent(JsonObject data)
     {
         String query = createInsertQuery("event", data);
         System.out.println(query);
-        executeInsertQuery(query);
+        return executeInsertQuery(query);
     }
     
-    public String getVideo(int video_id)
+    public JsonObject getVideo(int video_id)
     {
         String query = "SELECT * FROM video WHERE id=" + video_id;
-        return getSelectQueryAsJsonString(query);
+        return getSelectQueryAsJson(query);
     }
     
     /**
