@@ -1,8 +1,10 @@
 package io.distributed.videodirector;
 
 import com.google.gson.*;
+
 import java.io.*;
 import java.util.ArrayList;
+
 import spark.Request;
 import spark.Response;
 import static spark.Spark.*;
@@ -40,8 +42,12 @@ public class Main
         if (id == null)
         {
             req.session().attribute("id", ++id_counter);
+            System.out.println("New client id is issued");
             return id_counter;
         }
+//        // Testing
+//        id = 1; 
+        System.out.println("ClientID: " + id);
         return id;
     }
     
@@ -111,6 +117,7 @@ public class Main
         {
             // parse request
             int id = Integer.parseInt(request.params("event_id"));
+            System.out.println(request.body());
             
             JsonObject event = server.eventById(id);
             System.out.println("eventById: " + event.toString());
@@ -137,7 +144,11 @@ public class Main
             
             // respond with request for successful call
             response.type("application/json");
-            return obj.toString();
+            
+            JsonObject respobj = new JsonObject();
+            respobj.addProperty("id", video_id);
+            respobj.add("name", obj.get("name"));
+            return respobj.toString();
         }, 
         new JsonTransformer());
         
@@ -275,8 +286,8 @@ public class Main
             
             if (c.hasVideos() == false)
             {
-                response.status(404); // no uploaded videos
-                return "You have no video candidates to upload";
+//                response.status(404); // no uploaded videos
+                return "{}";
             }
             
             ArrayList<Video> candidates = 

@@ -38,18 +38,6 @@ public class Director
     
     private ArrayList<Client> clients;
     
-    // (1): database
-    // create database videodirector;
-    
-    // (2): user
-    // CREATE USER 'uname'@'localhost' IDENTIFIED BY 'passw';
-    // GRANT ALL PRIVILEGES ON videodirector.* TO 'uname'@'localhost';
-    
-    // (3): tables
-    // create table event (id int not null auto_increment, name varchar(255) not null, primary key(id));
-    // create table video (id int not null auto_increment, name varchar(255) not null, primary key(id));
-    // create table event_videos (event_id int not null, video_id int not null, primary key(event_id, video_id));
-    
     public Director()
     {
         try
@@ -122,6 +110,7 @@ public class Director
 
     public ArrayList<Video> calculateCandidates(ArrayList<Video> videos)
     {
-        return null;
+    	//TODO actually filter videos here
+        return videos;
     }
 }

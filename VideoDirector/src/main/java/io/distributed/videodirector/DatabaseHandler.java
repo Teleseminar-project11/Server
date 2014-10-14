@@ -38,7 +38,7 @@ public class DatabaseHandler
     public static Connection getConnection() throws Exception
     {
         String driver = "org.gjt.mm.mysql.Driver";
-        String url = "jdbc:mysql://localhost/videodirector";
+        String url = "jdbc:mysql://localhost/videodirectordb";
         String username = "uname";
         String password = "passw";
         
