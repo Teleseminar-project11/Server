@@ -111,6 +111,11 @@ public class Director
     public ArrayList<Video> calculateCandidates(ArrayList<Video> videos)
     {
     	//TODO actually filter videos here
-        return videos;
+    	ArrayList<Video> res = new ArrayList<Video>();
+    	for (Video v : videos) {
+    		if (!v.isReceived())
+    			res.add(v);
+    	}
+        return res;
     }
 }

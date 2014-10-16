@@ -26,4 +26,5 @@ create table if not exists event_videos(
 	primary key(event_id, video_id));
 
 
-insert into event (id, name) value (111, "Testing Fixture");
+insert into event (id, name) value (111, "Testing Event");
+insert into event (id, name) value (222, "Testing Event2");

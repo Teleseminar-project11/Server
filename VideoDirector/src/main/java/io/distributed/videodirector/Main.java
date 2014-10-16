@@ -42,11 +42,9 @@ public class Main
         if (id == null)
         {
             req.session().attribute("id", ++id_counter);
-            System.out.println("New client id is issued");
+            System.out.println("New client id issued: " + id_counter);
             return id_counter;
         }
-//        // Testing
-//        id = 1; 
         System.out.println("ClientID: " + id);
         return id;
     }
@@ -152,10 +150,9 @@ public class Main
         }, 
         new JsonTransformer());
         
-        /**
-         * PUT /video/video_id
-         * Upload @video_id candidate
-        **/
+        
+        /// PUT /video/video_id
+        /// Upload @video_id candidate
         put("/video/:video_id",
         (Request request, Response response) ->
         {
@@ -186,7 +183,7 @@ public class Main
              * Receive video from client
              * 
             **/
-            File file = new File("upload/video" + video_id);
+            File file = new File("upload/video" + video_id + ".mp4");
             System.out.println("Checking paths: " + file.getAbsolutePath());
             
             if (file.exists())

@@ -50,4 +50,4 @@ ffmpeg -loglevel verbose -re -i /var/videos/bbb480.avi -vcodec libx264 -vprofile
 ffmpeg -loglevel verbose -re -i /var/videos/bbb480.avi -vcodec libx264 -vprofile baseline -acodec libmp3lame -ar 44100 -ac 1 -f flv rtmp://localhost:1935/hlsapp/bbb480
 ffmpeg -threads 6 -i /var/videos/bbb480.avi -c copy -vcodec libx264 -c:a libmp3lame -ar 44100 -ac 2 -f flv rtmp://localhost:1935/hlsapp/bbb480
 
-{"timestamp":"2014 10 13","duration":2688,"resolution":"176*144","shaking":0,"name":"VID_20141014_005456.mp4"}
+{"duration":8490,"height":144,"shaking":0,"width":176,"finish_time":"2014-10-14 16:56:56.0","name":"VID_20141014_165646.mp4"}
