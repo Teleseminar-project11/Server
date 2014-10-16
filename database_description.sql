@@ -16,6 +16,7 @@ create table if not exists video(
 	width int not null,
 	height int not null,
 	shaking int not null,
+	tilt int not null,
 	name varchar(255) not null, 
 	primary key(id)
 );
