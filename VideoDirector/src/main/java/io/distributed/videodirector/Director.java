@@ -120,8 +120,16 @@ public class Director
         return database.getVideo(video_id);
     }
 
-    public ArrayList<Video> calculateCandidates(ArrayList<Video> videos)
+    public ArrayList<Video> calculateCandidates(int event_id)
     {
+        // select best candidate from all videos from a specific event
+        // we will only be returning one video for now
+        
+        // (1) get all video IDs for event
+        //ArrayList<int> database.getEventVideos(event_id);
+        
+        // NOTE: store video status in video table
+        
         return null;
     }
 }
