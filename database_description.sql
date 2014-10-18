@@ -1,7 +1,10 @@
-#(1): database
+# (0): delete old database
+drop database videodirectordb;
+
+# (1): create database
 create database if not exists videodirectordb;
 
-#(2): tables
+# (2): tables
 use videodirectordb;
 create table if not exists event (
 		id int not null auto_increment, 
@@ -28,5 +31,6 @@ create table if not exists event_videos(
 	primary key(event_id, video_id)
 );
 
+# (3): test data
 insert into event (id, name) value (111, "Testing Event");
 insert into event (id, name) value (222, "Testing Event2");
