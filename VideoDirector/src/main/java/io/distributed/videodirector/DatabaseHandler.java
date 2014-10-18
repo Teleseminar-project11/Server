@@ -306,8 +306,8 @@ public class DatabaseHandler
     public ArrayList<Integer> getEventTopRatedVideo(int event_id)
     {
         // get events belonging to a video
-        String query = "SELECT v.id, v.rating, e.event_id FROM videos AS v, event_videos AS e"
-                     + "WHERE v.id = e.video_id AND e.id = " + event_id + " ORDER BY v.rating";
+        String query = "SELECT v.id, v.rating, e.event_id FROM video AS v, event_videos AS e"
+                     + "WHERE v.id = e.video_id AND e.event_id = " + event_id + " ORDER BY v.rating";
         return getSelectQueryAsList(query);
     }
     

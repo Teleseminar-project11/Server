@@ -36,3 +36,13 @@ create table if not exists event_videos(
 # (3): test data
 insert into event (id, name) value (111, "Testing Event");
 insert into event (id, name) value (222, "Testing Event2");
+
+insert into video values ('', 
+	'2014-10-18 18:14:06.0', 
+	300, 640,480, 11,41, 
+	'VID_20141018_181401.mp4', 
+	10);
+
+insert into event_videos values(111, 1);
+
+# SELECT v.id, v.rating, e.event_id FROM videos AS v, event_videos AS e WHERE v.id = e.video_id AND e.id = 111 ORDER BY v.rating;
