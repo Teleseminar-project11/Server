@@ -37,7 +37,7 @@ create table if not exists event_videos(
 insert into event (id, name) value (111, "Testing Event");
 insert into event (id, name) value (222, "Testing Event2");
 
-insert into video values ('', 
+insert into video values (1, 
 	'2014-10-18 18:14:06.0', 
 	300, 640,480, 11,41, 
 	'VID_20141018_181401.mp4', 

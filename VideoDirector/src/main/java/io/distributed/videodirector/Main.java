@@ -293,7 +293,7 @@ public class Main
             if (c.hasVideos() == false)
             {
                 // response.status(404); // no uploaded videos
-                return "{}";
+                return "[]";
             }
             
             ArrayList<Video> candidates = 
