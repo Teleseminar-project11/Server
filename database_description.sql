@@ -18,14 +18,15 @@ create table if not exists video(
 	shaking int not null,
 	tilt int not null,
 	name varchar(255) not null, 
+	status int,
 	primary key(id)
 );
 
 create table if not exists event_videos(
 	event_id int not null, 
 	video_id int not null, 
-	primary key(event_id, video_id));
-
+	primary key(event_id, video_id)
+);
 
 insert into event (id, name) value (111, "Testing Event");
 insert into event (id, name) value (222, "Testing Event2");
