@@ -1,11 +1,13 @@
-# (0): delete old database
-drop database videodirectordb;
-
 # (1): create database
 create database if not exists videodirectordb;
 
 # (2): tables
 use videodirectordb;
+
+drop table event;
+drop table video;
+drop table event_videos;
+
 create table if not exists event (
 		id int not null auto_increment, 
 		name varchar(255) not null, 
