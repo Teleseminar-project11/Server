@@ -136,7 +136,7 @@ public class Director
                 // the only uploadable video in this case is the top-rated one
                 // if client has video that is top-rated -->
                 Video v = c.getVideo(vids.get(0));
-                if (v != null)
+                if (v != null && !v.isReceived())
                 {
                     // add video to list client should upload
                     res.add(v);
