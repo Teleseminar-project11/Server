@@ -29,8 +29,6 @@ import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-//class for setting up and running SQL queries. Accessed through the class DatabaseController 
-//
 public class DatabaseHandler
 {
     final Connection connection;
@@ -306,7 +304,7 @@ public class DatabaseHandler
     public ArrayList<Integer> getEventTopRatedVideo(int event_id)
     {
         // get events belonging to a video
-        String query = "SELECT v.id, v.rating, e.event_id FROM video AS v, event_videos AS e"
+        String query = "SELECT v.id, v.rating, e.event_id FROM video AS v, event_videos AS e "
                      + "WHERE v.id = e.video_id AND e.event_id = " + event_id + " ORDER BY v.rating";
         return getSelectQueryAsList(query);
     }
@@ -325,9 +323,9 @@ public class DatabaseHandler
     }
     
     /**
-     *
      * @param data Video metadata as JSON object
-     */
+     * @return Returns ID of saved video
+    **/
     public int saveVideo(JsonObject data)
     {
         String query = createInsertQuery("video", data);

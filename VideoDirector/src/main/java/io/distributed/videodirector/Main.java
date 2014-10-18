@@ -287,6 +287,8 @@ public class Main
             int client_id = getSessionID(request);
             // TODO here a list of selected but not yet uploaded videos
             Client c = server.getClient(client_id);
+            // new Client(11);
+            //c.addVideo(111, 1);
             
             if (c.hasVideos() == false)
             {

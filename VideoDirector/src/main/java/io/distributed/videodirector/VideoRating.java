@@ -68,12 +68,12 @@ public class VideoRating
     **/
     static int rate(JsonObject obj)
     {
-        // finish_time timestamp not null,
-        // duration int not null,
-        // width int not null,
-        // height int not null,
-        //shaking int not null,
-        // tilt int not null,
+        // timestamp finish_time
+        // int duration
+        // int width
+        // int height
+        // int shaking
+        // int tilt
         int tilt  = obj.get("tilt").getAsInt();
         int shake = obj.get("shaking").getAsInt();
         
