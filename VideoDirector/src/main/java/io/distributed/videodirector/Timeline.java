@@ -34,12 +34,39 @@ import java.util.concurrent.TimeUnit;
  */
 public class Timeline
 {
+    private long startTime;
+    private long endTime;
+    private int  duration;
+    
+    public Timeline(String finish_time, int duration)
+        throws ParseException
+    {
+        this.duration = duration;
+        this.endTime = parse(finish_time);
+        this.startTime = endTime - this.duration;
+    }
+    
     static long parse(String timeString) throws ParseException
     {
-        SimpleDateFormat sdf  = new SimpleDateFormat("yyyy-MM-dd kk:mm:ss.SSS");
+        SimpleDateFormat sdf  = 
+                new SimpleDateFormat("yyyy-MM-dd kk:mm:ss.SSS");
         Date date = sdf.parse(timeString);
         long milliEpoch = date.getTime();
         
         return TimeUnit.MILLISECONDS.toSeconds(milliEpoch);
     }
+    
+    public long getStartTime()
+    {
+        return this.startTime;
+    }
+    public long getEndTime()
+    {
+        return this.endTime;
+    }
+    public int getDuration()
+    {
+        return duration;
+    }
+    
 }

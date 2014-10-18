@@ -31,6 +31,16 @@ import com.google.gson.JsonObject;
  */
 public class VideoRating
 {
+    // http://en.wikipedia.org/wiki/Sigmoid_function
+    static double transformed_sigmoid(double x, double scale)
+    {
+        // scale down to sane range
+        x /= scale;
+        // some arbitrary sigmoid function
+        double f = x / (1 + Math.abs(x));
+        // transform from [-1, 1] to [0, 1]
+        return (f + 1.0) * 0.5;
+    }
     
     /**
      * @param shake
@@ -74,12 +84,15 @@ public class VideoRating
         // int height
         // int shaking
         // int tilt
+        double dur   = obj.get("duration").getAsInt() / 1000.0;
+        if (dur < 0.1) dur = 0.1; // clamp to some positive
+        
         int tilt  = obj.get("tilt").getAsInt();
         int shake = obj.get("shaking").getAsInt();
         
         // apply sigmoid function for mapping to [0, 1]
-        double nshake = Math.tanh(shake);
-        double ntilt = Math.tanh(tilt);
+        double nshake = transformed_sigmoid(shake, 1.5 * dur);
+        double ntilt  = transformed_sigmoid(tilt, 1.5 * dur);
         
         // given that most mobile videos are low w:h does it even matter?
         return rank(nshake, ntilt);

@@ -117,7 +117,7 @@ public class Director
         // for each video...
         c.getVideos().stream().forEach((v) ->
         {
-            // add event to events list
+            // add the videos event_id to events set
             events.add(v.getEventId());
             System.out.println("EVENT: " + v.getEventId());
         });
