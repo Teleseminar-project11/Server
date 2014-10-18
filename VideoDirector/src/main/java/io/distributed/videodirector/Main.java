@@ -130,6 +130,11 @@ public class Main
             JsonElement req = new JsonParser().parse(request.body());
             JsonObject  obj = req.getAsJsonObject();
             
+            // here we must rate the video before putting it in database
+            // the rating is done through static Rating class
+            int rank = VideoRating.rate(obj);
+            obj.addProperty("rating", rank);
+            
             // add video to database (and get id)
             int video_id = server.addEventVideo(id, obj);
             

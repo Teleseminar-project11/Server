@@ -23,7 +23,7 @@ create table if not exists video(
 	shaking int not null,
 	tilt int not null,
 	name varchar(255) not null, 
-	status int,
+	rating int,
 	primary key(id)
 );
 
