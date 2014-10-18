@@ -29,26 +29,39 @@ package io.distributed.videodirector;
  */
 public class Video
 {
-    private final long id;
-    private boolean    received;
+    public enum status_t
+    {
+        METADATA,
+        UPLOAD,
+        RECEIVED,
+    };
     
-    public Video(long id)
+    private final int id;
+    private final int event_id;
+    private status_t  status;
+    
+    public Video(int event_id, int id)
     {
         this.id       = id;
-        this.received = false;
+        this.event_id = event_id;
+        this.status   = status_t.METADATA;
     }
     
-    public long getId()
+    public int getId()
     {
         return this.id;
+    }
+    public int getEventId()
+    {
+        return this.event_id;
     }
     
     public boolean isReceived()
     {
-        return received;
+        return status == status_t.RECEIVED;
     }
     public void received()
     {
-        this.received = true;
+        this.status = status_t.RECEIVED;
     }
 }

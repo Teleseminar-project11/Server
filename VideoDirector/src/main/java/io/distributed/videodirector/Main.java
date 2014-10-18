@@ -1,8 +1,10 @@
 package io.distributed.videodirector;
 
 import com.google.gson.*;
+
 import java.io.*;
 import java.util.ArrayList;
+
 import spark.Request;
 import spark.Response;
 import static spark.Spark.*;
@@ -40,8 +42,10 @@ public class Main
         if (id == null)
         {
             req.session().attribute("id", ++id_counter);
+            System.out.println("New client id issued: " + id_counter);
             return id_counter;
         }
+        System.out.println("ClientID: " + id);
         return id;
     }
     
@@ -111,6 +115,7 @@ public class Main
         {
             // parse request
             int id = Integer.parseInt(request.params("event_id"));
+            System.out.println(request.body());
             
             JsonObject event = server.eventById(id);
             System.out.println("eventById: " + event.toString());
@@ -133,18 +138,21 @@ public class Main
             Client c = server.getClient(client_id);
             
             // add video to clients list of candidates for upload
-            c.addVideo(video_id);
+            c.addVideo(id, video_id);
             
             // respond with request for successful call
             response.type("application/json");
-            return obj.toString();
+            
+            JsonObject respobj = new JsonObject();
+            respobj.addProperty("id", video_id);
+            respobj.add("name", obj.get("name"));
+            return respobj.toString();
         }, 
         new JsonTransformer());
         
-        /**
-         * PUT /video/video_id
-         * Upload @video_id candidate
-        **/
+        
+        /// PUT /video/video_id
+        /// Upload @video_id candidate
         put("/video/:video_id",
         (Request request, Response response) ->
         {
@@ -175,7 +183,7 @@ public class Main
              * Receive video from client
              * 
             **/
-            File file = new File("upload/video" + video_id);
+            File file = new File("upload/video" + video_id + ".mp4");
             System.out.println("Checking paths: " + file.getAbsolutePath());
             
             if (file.exists())
@@ -275,12 +283,12 @@ public class Main
             
             if (c.hasVideos() == false)
             {
-                response.status(404); // no uploaded videos
-                return "You have no video candidates to upload";
+                // response.status(404); // no uploaded videos
+                return "{}";
             }
             
             ArrayList<Video> candidates = 
-                    server.calculateCandidates(c.getVideos());
+                    server.calculateCandidates(c);
             
         	// should be returned as a JSON string. 
             response.type("application/json");

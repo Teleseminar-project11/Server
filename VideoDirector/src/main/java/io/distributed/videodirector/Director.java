@@ -25,6 +25,7 @@ package io.distributed.videodirector;
 
 import com.google.gson.JsonObject;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -37,18 +38,6 @@ public class Director
     static DatabaseHandler database;
     
     private ArrayList<Client> clients;
-    
-    // (1): database
-    // create database videodirector;
-    
-    // (2): user
-    // CREATE USER 'uname'@'localhost' IDENTIFIED BY 'passw';
-    // GRANT ALL PRIVILEGES ON videodirector.* TO 'uname'@'localhost';
-    
-    // (3): tables
-    // create table event (id int not null auto_increment, name varchar(255) not null, primary key(id));
-    // create table video (id int not null auto_increment, name varchar(255) not null, primary key(id));
-    // create table event_videos (event_id int not null, video_id int not null, primary key(event_id, video_id));
     
     public Director()
     {
@@ -100,7 +89,8 @@ public class Director
     
     /**
      *
-     * @param obj Event to be created as JSON object
+     * @param obj Event (as JSON) to be added to database
+     * @return Returns event (insertion) id
      */
     public int addEvent(JsonObject obj)
     {
@@ -120,16 +110,39 @@ public class Director
         return database.getVideo(video_id);
     }
 
-    public ArrayList<Video> calculateCandidates(int event_id)
+    public ArrayList<Video> calculateCandidates(Client c)
     {
-        // select best candidate from all videos from a specific event
-        // we will only be returning one video for now
+        HashSet<Integer> events = new HashSet<>();
         
-        // (1) get all video IDs for event
-        //ArrayList<int> database.getEventVideos(event_id);
+        // for each video...
+        c.getVideos().stream().forEach((v) ->
+        {
+            // add event to events list
+            events.add(v.getEventId());
+            System.out.println("EVENT: " + v.getEventId());
+        });
         
-        // NOTE: store video status in video table
+    	ArrayList<Video> res = new ArrayList<>();
         
-        return null;
+        // for each event...
+        events.forEach((e) ->
+        {
+            // get top rated video for that event
+            ArrayList<Integer> vids
+                    = database.getEventTopRatedVideo(e);
+            
+            if (!vids.isEmpty())
+            {
+                // the only uploadable video in this case is the top-rated one
+                // if client has video that is top-rated -->
+                Video v = c.getVideo(vids.get(0));
+                if (v != null)
+                {
+                    // add video to list client should upload
+                    res.add(v);
+                }
+            }
+        });
+        return res;
     }
 }

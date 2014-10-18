@@ -53,15 +53,20 @@ public class Client
         }
         return null;
     }
-    public void addVideo(int vid)
+    public void addVideo(int event_id, int vid)
     {
-        if (getVideo(vid) != null) return;
-        videos.add(new Video(vid));
+        if (hasVideo(vid)) return;
+        videos.add(new Video(event_id, vid));
     }
     
     public boolean hasVideos()
     {
         return !videos.isEmpty();
+    }
+    public boolean hasVideo(int vid)
+    {
+        return videos.stream().anyMatch((v) -> 
+                (v.getId() == vid));
     }
     public ArrayList<Video> getVideos()
     {

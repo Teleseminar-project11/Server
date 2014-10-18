@@ -38,7 +38,7 @@ public class DatabaseHandler
     public static Connection getConnection() throws Exception
     {
         String driver = "org.gjt.mm.mysql.Driver";
-        String url = "jdbc:mysql://localhost/videodirector";
+        String url = "jdbc:mysql://localhost/videodirectordb";
         String username = "uname";
         String password = "passw";
         
@@ -165,6 +165,35 @@ public class DatabaseHandler
         }
         return result;
     }
+    
+    private ArrayList<Integer> getSelectQueryAsList(String query)
+    {
+        Statement stm = null;
+        ArrayList<Integer> result = null;
+        try
+        {
+            stm = connection.createStatement();
+            ResultSet set = executeSelectQuery(stm, query);
+            
+            result = getIdFromResultSet(set);
+        }
+        catch(Exception e)
+        {
+            e.printStackTrace();
+        }
+        finally
+        {
+            try
+            {
+                if (stm != null) stm.close();
+            }
+            catch (SQLException ex)
+            {
+                ex.printStackTrace();
+            }
+        }
+        return result;
+    }
 
     private JsonObject getJsonFromResultSet(ResultSet resultSet)
     {
@@ -222,6 +251,30 @@ public class DatabaseHandler
         System.out.println(json.toString());
         return json;
     }
+    private ArrayList<Integer> getIdFromResultSet(ResultSet resultSet)
+    {
+        ArrayList<Integer> res = new ArrayList<>();
+        try
+        {
+            //find the column name
+            ResultSetMetaData metaData = resultSet.getMetaData();
+            
+            int numColumns = metaData.getColumnCount();
+            if (numColumns == 0) return null;
+            
+            // get all ids from result set
+            while (resultSet.next())
+            {
+                res.add( resultSet.getInt(1) );
+            }
+        }
+        catch (Exception e)
+        {
+            System.out.println("Error occured in getIdFromResultSet: " + e);
+            e.printStackTrace();
+        }
+        return res;
+    }
     
     public JsonObject getEvents()
     {
@@ -244,6 +297,20 @@ public class DatabaseHandler
         obj.add("videos", child);
         return obj;
     }
+    public ArrayList<Integer> getEventFromVideo(int video_id)
+    {
+        // get events belonging to a video
+        String query = "SELECT event_id FROM event_videos WHERE video_id=" + video_id;
+        return getSelectQueryAsList(query);
+    }
+    public ArrayList<Integer> getEventTopRatedVideo(int event_id)
+    {
+        // get events belonging to a video
+        String query = "SELECT v.id, v.rating, e.event_id FROM videos AS v, event_videos AS e"
+                     + "WHERE v.id = e.video_id AND e.id = " + event_id + " ORDER BY v.rating";
+        return getSelectQueryAsList(query);
+    }
+    
     public int addEvent(JsonObject data)
     {
         String query = createInsertQuery("event", data);
