@@ -31,18 +31,41 @@ import com.google.gson.JsonObject;
  */
 public class VideoRating
 {
-    static int rank(double[] kernel)
+    
+    /**
+     * @param shake
+     * @param tilt
+     * @return Rank values in range [0, 100]
+    **/
+    static int rank(double shake, double tilt)
     {
-        double dot = 0.0f;
-        for (double f : kernel)
+        final double kernel[] =
         {
-            dot += f * f;
+            shake, 
+            tilt
+        };
+        final double weights[] = 
+        {
+            0.55, // shake
+            0.45  // tilt
+        };
+        
+        double dot = 0.0f;
+        for (int i = 0; i < kernel.length; i++)
+        {
+            dot += Math.pow(kernel[i] * weights[i], 2.0);
         }
         double root = Math.sqrt(dot);
         
         return (int) (root * 100.0);
     }
     
+    // rates a video according to normalization functions
+    // TODO: currently only using tanh as normalizer, replace with better
+    /**
+     * @param obj Json string of video to be rated
+     * @return Returns the rating for a video in range [0, 100]
+    **/
     static int rate(JsonObject obj)
     {
         // finish_time timestamp not null,
@@ -55,11 +78,10 @@ public class VideoRating
         int shake = obj.get("shaking").getAsInt();
         
         // apply sigmoid function for mapping to [0, 1]
-        double ntilt = Math.tanh(tilt);
         double nshake = Math.tanh(shake);
+        double ntilt = Math.tanh(tilt);
         
         // given that most mobile videos are low w:h does it even matter?
-        double kernel[] = { ntilt, nshake };
-        return rank(kernel);
+        return rank(nshake, ntilt);
     }
 }

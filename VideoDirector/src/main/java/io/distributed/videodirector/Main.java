@@ -135,6 +135,9 @@ public class Main
             int rank = VideoRating.rate(obj);
             obj.addProperty("rating", rank);
             
+            // add the status flag to video, flagged as "metadata only"
+            //obj.addProperty("status", 0);
+            
             // add video to database (and get id)
             int video_id = server.addEventVideo(id, obj);
             
@@ -154,7 +157,6 @@ public class Main
             return respobj.toString();
         }, 
         new JsonTransformer());
-        
         
         /// PUT /video/video_id
         /// Upload @video_id candidate
