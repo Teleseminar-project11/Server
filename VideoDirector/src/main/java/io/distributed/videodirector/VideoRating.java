@@ -34,14 +34,14 @@ public class VideoRating
     // http://en.wikipedia.org/wiki/Sigmoid_function
     static double transformed_sigmoid(double x, double duration)
     {
-        // common video duration mapping
-        x *= x / duration;
-        x -= 0.1 * duration;
-
+        // video duration scaling (for short videos)
+        x *= x / duration / 15.0;
+        x -= 0.3 * duration;
+        
         // some arbitrary sigmoid function
         double f = x / (1 + Math.abs(x));
         f = Math.pow(f, 3.0);
-
+        
         // transform from [-1, 1] to [0, 1]
         return (f + 1.0) * 0.5;
     }
@@ -80,7 +80,7 @@ public class VideoRating
     **/
     static int rate(JsonObject obj)
     {
-        double dur   = obj.get("duration").getAsInt() / 1000.0;
+        double dur = obj.get("duration").getAsInt() / 1000.0;
         if (dur < 0.1) dur = 0.1; // clamp to some positive
         
         int tilt  = obj.get("tilt").getAsInt();
