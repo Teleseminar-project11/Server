@@ -32,6 +32,7 @@ import com.google.gson.JsonObject;
 public class VideoRating
 {
     // http://en.wikipedia.org/wiki/Sigmoid_function
+    // http://upload.wikimedia.org/wikipedia/commons/6/6f/Gjl-t%28x%29.svg
     static double transformed_sigmoid(double x, double duration)
     {
         // video duration scaling (for short videos)

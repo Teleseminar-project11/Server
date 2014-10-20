@@ -116,7 +116,42 @@ public class DatabaseHandler
             try
             {
                 if (stm != null) stm.close();
-            } catch (SQLException ex)
+            }
+            catch (SQLException ex)
+            {
+                ex.printStackTrace();
+                Logger.getLogger(DatabaseHandler.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+        return -1;
+    }
+    private int executeUpdateQuery(String query)
+    {
+        Statement stm = null;
+        try
+        {
+            stm = connection.createStatement();
+            // resultSet gets the result of the SQL query
+            stm.executeUpdate(query, Statement.RETURN_GENERATED_KEYS);
+            
+            ResultSet rs = stm.getGeneratedKeys();
+            if (rs.next())
+            {
+                return rs.getInt(1);
+            }
+            return -1;
+        }
+        catch(Exception e)
+        {
+            e.printStackTrace();
+        }
+        finally
+        {
+            try
+            {
+                if (stm != null) stm.close();
+            }
+            catch (SQLException ex)
             {
                 ex.printStackTrace();
                 Logger.getLogger(DatabaseHandler.class.getName()).log(Level.SEVERE, null, ex);
@@ -341,6 +376,33 @@ public class DatabaseHandler
         
         String query = createInsertQuery("event_videos", json);
         return executeInsertQuery(query);
+    }
+
+    public void setVideoStatus(int video_id, int status)
+    {
+        String query = "UPDATE video SET status=" + status + " WHERE id=" + video_id;
+        executeUpdateQuery(query);
+    }
+    public int getVideoStatus(int video_id)
+    {
+        String query = "SELECT status FROM video WHERE id=" + video_id;
+        ArrayList<Integer> list = getSelectQueryAsList(query);
+        
+        if (!list.isEmpty()) return list.get(0);
+        return -1;
+    }
+    
+    public ArrayList<Integer> getEventVideosAfter(
+            int event_id, int status, long timestamp)
+    {
+        // find videos for event that starts after the delayed time
+        String query = 
+            "SELECT v.id, v.rating FROM video AS v, event_videos AS e WHERE "
+          + "v.id = e.video_id AND v.status = " + status + " AND (" + timestamp
+          + " - unix_timestamp(v.finish_time) - (v.duration / 1000)) >= 0 "
+          + "AND e.event_id=" + event_id + " ORDER BY v.rating LIMIT 1;";
+        
+        return getSelectQueryAsList(query);
     }
     
 }

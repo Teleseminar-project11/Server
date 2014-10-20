@@ -31,7 +31,7 @@ import java.util.ArrayList;
  */
 public class Client
 {
-    private ArrayList<Video> videos;
+    private final ArrayList<Video> videos;
     private final int session_id;
     
     public Client(int id)

@@ -52,7 +52,6 @@ public class Main
     public static void main(String[] args)
     {
         setPort(1234);
-        //setIpAddress("192.168.137.1");
         
         /// GET /events
         /// Lists all events (including videos) in JSON ///
@@ -81,6 +80,7 @@ public class Main
             // add id to response
             obj.addProperty("id", id);
             // respond with json string
+            response.status(200);
             response.type("application/json");
             return obj.toString();
         });
@@ -135,8 +135,9 @@ public class Main
             int rank = VideoRating.rate(obj);
             obj.addProperty("rating", rank);
             
+            // finally,
             // add the status flag to video, flagged as "metadata only"
-            //obj.addProperty("status", 0);
+            obj.addProperty("status", 0);
             
             // add video to database (and get id)
             int video_id = server.addEventVideo(id, obj);
@@ -204,24 +205,22 @@ public class Main
                 response.status(500); // internal error
                 return "File path failure: " + file.getAbsolutePath();
             }
-            
-            //file.createNewFile();
             System.out.println("Downloading to: " + file.getAbsoluteFile());
             
             try (FileOutputStream fw = new FileOutputStream(file.getAbsoluteFile()))
             {
                 InputStream content = request.raw().getInputStream();
-                
-                int len;
-                len = copyInputStream(content, fw);
+                int len = copyInputStream(content, fw);
                 
                 System.out.println("Received " + len + " bytes from file: " + file.getAbsoluteFile());
                 
                 /**
                  * Register that we received video from client
                 **/
-                System.out.println("Received video " + video_id + " obj: " + video);
+                System.out.println("Received video " + video_id);
                 video.received();
+                // update video status on database
+                server.updateVideoStatus(video_id, Video.RECEIVED);
                 
                 response.status(201); // resource created
                 return "Upload successful\n";
@@ -254,10 +253,8 @@ public class Main
              * Transfer video to client
              * 
             **/
-            try
+            try (OutputStream output = response.raw().getOutputStream())
             {
-                OutputStream output = response.raw().getOutputStream();
-                
                 File file = new File("upload/video" + video_id);
                 if (!file.exists())
                 {
@@ -265,18 +262,23 @@ public class Main
                     return "No such video" + video_id + "\n";
                 }
                 
-                FileInputStream fi = new FileInputStream(file.getAbsoluteFile());
-                int len = copyInputStream(fi, output);
-                fi.close();
-                
-                response.status(200);
-                return "Sent " + len + " bytes\n";
+                try (FileInputStream fi = new FileInputStream(file.getAbsoluteFile()))
+                {
+                    int len = copyInputStream(fi, output);
+                    response.status(200);
+                    return "Sent " + len + " bytes\n";
+                }
+                catch (IOException ex)
+                {
+                    ex.printStackTrace();
+                    return "File could not be received";
+                }
             }
             catch (IOException e)
             {
                 e.printStackTrace();
+                return "Could not create output stream\n";
             }
-            return "Something went wrong\n";
         });
         
         /// GET /selected

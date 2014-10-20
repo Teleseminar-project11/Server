@@ -25,6 +25,7 @@ package io.distributed.videodirector;
 
 import com.google.gson.JsonObject;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -35,9 +36,12 @@ import java.util.logging.Logger;
  */
 public class Director
 {
+    // get videos uploaded 2 minutes behind
+    public static int DELAY_SECONDS = 60 * 2;
+    
     static DatabaseHandler database;
     
-    private ArrayList<Client> clients;
+    private final ArrayList<Client> clients;
     
     public Director()
     {
@@ -104,12 +108,12 @@ public class Director
         
         return video_id;
     }
-
+    
     public JsonObject videoById(int video_id)
     {
         return database.getVideo(video_id);
     }
-
+    
     public ArrayList<Video> calculateCandidates(Client c)
     {
         HashSet<Integer> events = new HashSet<>();
@@ -121,15 +125,18 @@ public class Director
             events.add(v.getEventId());
             System.out.println("EVENT: " + v.getEventId());
         });
+        ArrayList<Video> res = new ArrayList<>();
         
-    	ArrayList<Video> res = new ArrayList<>();
+        // current DELAYED timestamp (in seconds)
+        long delay_timestamp = (new Date()).getTime() / 1000 - DELAY_SECONDS;
         
         // for each event...
         events.forEach((e) ->
         {
-            // get top rated video for that event
+            // get top video for that event (after current delay timestamp)
+            // the video returned should have status 0 (metadata only)
             ArrayList<Integer> vids
-                    = database.getEventTopRatedVideo(e);
+                    = database.getEventVideosAfter(e, Video.METADATA, delay_timestamp);
             
             if (!vids.isEmpty())
             {
@@ -144,5 +151,10 @@ public class Director
             }
         });
         return res;
+    }
+
+    void updateVideoStatus(int video_id, int status)
+    {
+        database.setVideoStatus(video_id, status);
     }
 }
