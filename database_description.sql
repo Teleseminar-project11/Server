@@ -4,9 +4,9 @@ create database if not exists videodirectordb;
 # (2): tables
 use videodirectordb;
 
-drop table event;
-drop table video;
-drop table event_videos;
+drop table if exists event;
+drop table if exists video;
+drop table if exists event_videos;
 
 create table if not exists event (
 		id int not null auto_increment, 

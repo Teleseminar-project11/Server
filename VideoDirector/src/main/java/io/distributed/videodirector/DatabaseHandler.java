@@ -329,19 +329,11 @@ public class DatabaseHandler
     public long getEventTimestamp(int event_id)
     {
         // get events belonging to a video
-        String query = "SELECT unix_timestamp(ts) as ts FROM event "
+        String query = "SELECT id, unix_timestamp(ts) as ts FROM event "
                 + "WHERE id=" + event_id;
-        
-        // a little bit hackish way of getting the timestamp from unknown
-        // json root node name
         JsonObject obj = getSelectQueryAsJson(query);
-        Set<Map.Entry<String, JsonElement>> entrySet = obj.entrySet();
-        
-        while (entrySet.iterator().hasNext())
-        {
-            return Long.parseLong(entrySet.iterator().next().getKey());
-        }
-        return -1;
+        return obj.getAsJsonObject(Integer.toString(event_id))
+        		.get("ts").getAsLong();
     }
     public void setEventTimestamp(int event_id, long ts)
     {
@@ -351,7 +343,8 @@ public class DatabaseHandler
         
         System.out.println("New event(" + event_id + ") timestamp: " + ts_str);
         
-        String query = "UPDATE event SET ts=" + ts_str + " WHERE id=" + event_id;
+        // ESCAPES!!
+        String query = "UPDATE event SET ts=\"" + ts_str + "\" WHERE id=" + event_id;
         executeUpdateQuery(query);
     }
     public JsonObject getEventVideos(int event)
