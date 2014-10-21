@@ -415,11 +415,13 @@ public class DatabaseHandler
     public ArrayList<Integer> getEventVideosAfterTimestamp(
             int event_id, int status)
     {
+        long ts = getEventTimestamp(event_id);
+        
         // find videos for event that starts after the delayed time
         String query = 
             "SELECT v.id, v.rating FROM video AS v, event_videos AS e WHERE "
           + "v.id = e.video_id AND v.status = " + status + " AND ("
-          + "unix_timestamp(v.finish_time) - (v.duration / 1000) > unix_timestamp(e.ts)) "
+          + "unix_timestamp(v.finish_time) - (v.duration / 1000) > " + ts + ") "
           + "AND e.event_id=" + event_id + " ORDER BY v.rating LIMIT 1;";
         
         return getSelectQueryAsList(query);
