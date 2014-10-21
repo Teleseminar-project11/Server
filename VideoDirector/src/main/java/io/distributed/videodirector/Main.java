@@ -3,7 +3,10 @@ package io.distributed.videodirector;
 import com.google.gson.*;
 
 import java.io.*;
+import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import spark.Request;
 import spark.Response;
@@ -146,8 +149,16 @@ public class Main
             int client_id = getSessionID(request);
             Client c = server.getClient(client_id);
             
-            // add video to clients list of candidates for upload
-            c.addVideo(id, video_id, obj.get("finish_time").getAsString());
+            try
+            {
+                // add video to clients list of candidates for upload
+                c.addVideo(id, video_id, obj.get("finish_time").getAsString());
+            } catch (ParseException ex)
+            {
+                Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
+                // finish_time is the only throwable error:
+                return "Failed to parse video finish time";
+            }
             
             // respond with request for successful call
             response.type("application/json");
@@ -221,7 +232,7 @@ public class Main
                 video.received();
                 // update video status on database
                 server.updateVideoStatus(video_id, Video.RECEIVED);
-                // update timestamp on event(s) belonging to video_id
+                // update timestamp on event registered to video_id
                 server.updateEventTimestamp(video.getEventId(), video.getFinishTimestamp());
                 
                 response.status(201); // resource created
@@ -289,10 +300,7 @@ public class Main
         (Request request, Response response) ->
         {
             int client_id = getSessionID(request);
-            // TODO here a list of selected but not yet uploaded videos
             Client c = server.getClient(client_id);
-            // new Client(11);
-            //c.addVideo(111, 1);
             
             if (c.hasVideos() == false)
             {

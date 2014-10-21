@@ -23,10 +23,6 @@
  */
 package io.distributed.videodirector;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-
 /**
  *
  * @author gonzo
@@ -42,15 +38,12 @@ public class Video
     private final long finish_ts; // time stamp for end of video
     private int status;
     
-    public Video(int event_id, int id, String timestamp)
-        throws ParseException
+    public Video(int event_id, int id, long timestamp)
     {
-        Date ts = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(timestamp);
-        
-        this.id       = id;
-        this.event_id = event_id;
-        this.finish_ts = ts.getTime() / 1000;
-        this.status   = METADATA;
+        this.id        = id;
+        this.event_id  = event_id;
+        this.finish_ts = timestamp;
+        this.status    = METADATA;
     }
     
     public int getId()

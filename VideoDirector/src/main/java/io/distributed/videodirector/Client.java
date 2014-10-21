@@ -23,7 +23,10 @@
  */
 package io.distributed.videodirector;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 
 /**
  *
@@ -54,9 +57,13 @@ public class Client
         return null;
     }
     public void addVideo(int event_id, int vid, String timestamp)
+        throws ParseException
     {
         if (hasVideo(vid)) return;
-        videos.add(new Video(event_id, vid, timestamp));
+        // parse date to unix timestamp
+        Date ts = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(timestamp);
+        // add new video for this client (with timestamp in seconds)
+        videos.add(new Video(event_id, vid, ts.getTime() / 1000));
     }
     
     public boolean hasVideos()
