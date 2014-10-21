@@ -27,6 +27,8 @@ import com.google.gson.*;
 import java.sql.*;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -270,6 +272,10 @@ public class DatabaseHandler
                         current.addProperty(
                                 columnNames[i], resultSet.getDate(i+1).toString());
                         break;
+                    case "BIGINT":
+                        current.addProperty(
+                                columnNames[i], resultSet.getLong(i+1));
+                        break;
                     default:
                         System.out.println("UNUSED COLUMN: " + columnNames[i] + " " + columnType);
                     }
@@ -325,8 +331,17 @@ public class DatabaseHandler
         // get events belonging to a video
         String query = "SELECT unix_timestamp(ts) as ts FROM event "
                 + "WHERE id=" + event_id;
-        return getSelectQueryAsJson(query).getAsJsonArray().get(0).
-                getAsJsonObject().get("ts").getAsLong();
+        
+        // a little bit hackish way of getting the timestamp from unknown
+        // json root node name
+        JsonObject obj = getSelectQueryAsJson(query);
+        Set<Map.Entry<String, JsonElement>> entrySet = obj.entrySet();
+        
+        while (entrySet.iterator().hasNext())
+        {
+            return Long.parseLong(entrySet.iterator().next().getKey());
+        }
+        return -1;
     }
     public void setEventTimestamp(int event_id, long ts)
     {

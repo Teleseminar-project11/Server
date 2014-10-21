@@ -52,4 +52,10 @@ curl -i --request PUT --data-binary "@input.pdf" http://127.0.0.1:1234/video/111
 echo ">> Downloading file"
 wget http://127.0.0.1:1234/video/111 -O download.pdf
 
+echo "== "
+echo "== Retrieving /selected"
+echo "== "
+curl -i --request GET http://127.0.0.1:1234/selected
+echo ""
+
 exit 0

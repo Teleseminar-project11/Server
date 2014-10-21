@@ -24,6 +24,7 @@
 package io.distributed.videodirector;
 
 import com.google.gson.JsonObject;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -119,6 +120,15 @@ public class Director
     
     public ArrayList<Video> calculateCandidates(Client c)
     {
+        try
+        {
+            c.addVideo(111, 1, "2014-10-18 18:14:06");
+        } catch (ParseException ex)
+        {
+            ex.printStackTrace();
+            Logger.getLogger(Director.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
         HashSet<Integer> events = new HashSet<>();
         
         // for each video...
@@ -129,9 +139,6 @@ public class Director
             System.out.println("EVENT: " + v.getEventId());
         });
         ArrayList<Video> res = new ArrayList<>();
-        
-        // current DELAYED timestamp (in seconds)
-        long delay_timestamp = (new Date()).getTime() / 1000 - DELAY_SECONDS;
         
         // for each event...
         events.forEach((e) ->

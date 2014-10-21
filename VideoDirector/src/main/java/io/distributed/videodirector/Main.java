@@ -302,7 +302,7 @@ public class Main
             int client_id = getSessionID(request);
             Client c = server.getClient(client_id);
             
-            if (c.hasVideos() == false)
+            if (false) //c.hasVideos() == false)
             {
                 // response.status(404); // no uploaded videos
                 return "[]";
