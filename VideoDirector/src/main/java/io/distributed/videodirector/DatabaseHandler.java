@@ -324,7 +324,7 @@ public class DatabaseHandler
     {
         // get events belonging to a video
         String query = "SELECT unix_timestamp(ts) as ts FROM event "
-                + "WHERE event_id=" + event_id;
+                + "WHERE id=" + event_id;
         return getSelectQueryAsJson(query).getAsJsonArray().get(0).
                 getAsJsonObject().get("ts").getAsLong();
     }
