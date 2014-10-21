@@ -11,6 +11,7 @@ drop table event_videos;
 create table if not exists event (
 		id int not null auto_increment, 
 		name varchar(255) not null, 
+		ts timestamp not null,
 		primary key(id)
 );
 
@@ -35,8 +36,8 @@ create table if not exists event_videos(
 );
 
 # (3): test data
-insert into event (id, name) value (111, "Testing Event");
-insert into event (id, name) value (222, "Testing Event2");
+insert into event values (111, "Testing Event", now());
+insert into event values (222, "Testing Event2", now());
 
 insert into video values (1, 
 	'2014-10-18 18:14:06.0', 

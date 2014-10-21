@@ -147,7 +147,7 @@ public class Main
             Client c = server.getClient(client_id);
             
             // add video to clients list of candidates for upload
-            c.addVideo(id, video_id);
+            c.addVideo(id, video_id, obj.get("finish_time").getAsString());
             
             // respond with request for successful call
             response.type("application/json");
@@ -221,6 +221,8 @@ public class Main
                 video.received();
                 // update video status on database
                 server.updateVideoStatus(video_id, Video.RECEIVED);
+                // update timestamp on event(s) belonging to video_id
+                server.updateEventTimestamp(video.getEventId(), video.getFinishTimestamp());
                 
                 response.status(201); // resource created
                 return "Upload successful\n";
@@ -271,7 +273,7 @@ public class Main
                 catch (IOException ex)
                 {
                     ex.printStackTrace();
-                    return "File could not be received";
+                    return "File could not be sent";
                 }
             }
             catch (IOException e)

@@ -24,6 +24,7 @@
 package io.distributed.videodirector;
 
 import com.google.gson.JsonObject;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
@@ -98,6 +99,8 @@ public class Director
      */
     public int addEvent(JsonObject obj)
     {
+        String ts = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());
+        obj.addProperty("ts", ts);
         return database.addEvent(obj);
     }
     
@@ -133,10 +136,10 @@ public class Director
         // for each event...
         events.forEach((e) ->
         {
-            // get top video for that event (after current delay timestamp)
+            // get top video for that event (after current timestamp)
             // the video returned should have status 0 (metadata only)
             ArrayList<Integer> vids
-                    = database.getEventVideosAfter(e, Video.METADATA, delay_timestamp);
+                    = database.getEventVideosAfterTimestamp(e, Video.METADATA);
             
             if (!vids.isEmpty())
             {
@@ -156,5 +159,10 @@ public class Director
     void updateVideoStatus(int video_id, int status)
     {
         database.setVideoStatus(video_id, status);
+    }
+
+    void updateEventTimestamp(int event_id, long ts)
+    {
+        database.setEventTimestamp(event_id, ts);
     }
 }

@@ -53,10 +53,10 @@ public class Client
         }
         return null;
     }
-    public void addVideo(int event_id, int vid)
+    public void addVideo(int event_id, int vid, String timestamp)
     {
         if (hasVideo(vid)) return;
-        videos.add(new Video(event_id, vid));
+        videos.add(new Video(event_id, vid, timestamp));
     }
     
     public boolean hasVideos()

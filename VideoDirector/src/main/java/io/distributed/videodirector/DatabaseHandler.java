@@ -25,6 +25,7 @@ package io.distributed.videodirector;
 
 import com.google.gson.*;
 import java.sql.*;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -311,13 +312,32 @@ public class DatabaseHandler
     
     public JsonObject getEvents()
     {
-        String query = "SELECT * FROM event";
+        String query = "SELECT id, name FROM event";
         return getSelectQueryAsJson(query);
     }
     public JsonObject getEvent(int event)
     {
-        String query = "SELECT * FROM event WHERE id=" + event;
+        String query = "SELECT id, name FROM event WHERE id=" + event;
         return getSelectQueryAsJson(query);
+    }
+    public long getEventTimestamp(int event_id)
+    {
+        // get events belonging to a video
+        String query = "SELECT unix_timestamp(ts) as ts FROM event "
+                + "WHERE event_id=" + event_id;
+        return getSelectQueryAsJson(query).getAsJsonArray().get(0).
+                getAsJsonObject().get("ts").getAsLong();
+    }
+    public void setEventTimestamp(int event_id, long ts)
+    {
+        // set the current timestamp for an event
+        Date ts_date = new Date(ts * 1000);
+        String ts_str = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(ts_date);
+        
+        System.out.println("New event(" + event_id + ") timestamp: " + ts_str);
+        
+        String query = "UPDATE event SET ts=" + ts_str + " WHERE id=" + event_id;
+        executeUpdateQuery(query);
     }
     public JsonObject getEventVideos(int event)
     {
@@ -392,14 +412,14 @@ public class DatabaseHandler
         return -1;
     }
     
-    public ArrayList<Integer> getEventVideosAfter(
-            int event_id, int status, long timestamp)
+    public ArrayList<Integer> getEventVideosAfterTimestamp(
+            int event_id, int status)
     {
         // find videos for event that starts after the delayed time
         String query = 
             "SELECT v.id, v.rating FROM video AS v, event_videos AS e WHERE "
-          + "v.id = e.video_id AND v.status = " + status + " AND (" + timestamp
-          + " - unix_timestamp(v.finish_time) - (v.duration / 1000)) >= 0 "
+          + "v.id = e.video_id AND v.status = " + status + " AND ("
+          + "unix_timestamp(v.finish_time) - (v.duration / 1000) > e.ts) "
           + "AND e.event_id=" + event_id + " ORDER BY v.rating LIMIT 1;";
         
         return getSelectQueryAsList(query);
